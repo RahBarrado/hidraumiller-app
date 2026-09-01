@@ -16,8 +16,29 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        // Chave fixa e commitada no repositório, usada em toda build (debug
+        // e release) gerada pelo GitHub Actions. Sem isto, o Android Gradle
+        // Plugin cria uma chave de debug NOVA e aleatória a cada execução
+        // (porque cada máquina do GitHub Actions é nova/descartável), e o
+        // Android recusa instalar um APK assinado com chave diferente da
+        // já instalada ("conflito com pacote existente"), obrigando a
+        // desinstalar o app - e perder os dados salvos só dentro dele -
+        // toda vez que sai uma atualização. Com a chave fixa, toda build
+        // futura assina igual e a atualização instala por cima, normal.
+        hidraumiller {
+            storeFile file('hidraumiller-debug.keystore')
+            storePassword 'hidraumiller123'
+            keyAlias 'hidraumiller'
+            keyPassword 'hidraumiller123'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.hidraumiller
+        }
         release {
+            signingConfig signingConfigs.hidraumiller
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
