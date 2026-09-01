@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Sync www/index.html (the Android app's web asset) from the single canonical
-source file /home/claude/hidraumiller.html.
+source file hidraumiller.html, kept in this same project folder (copied here
+from the Claude session's working file whenever it changes) so this script
+works both in the Claude sandbox and in GitHub Actions (a different machine,
+which only has whatever is committed to the repo - never an absolute path
+from someone else's computer).
 
 hidraumiller.html is written as a fragment (no doctype/html/head/body - that's
 how the Claude Artifact tool wraps it for the browser/PWA version). For the
@@ -14,7 +18,7 @@ Run this every time hidraumiller.html changes, before `npx cap sync android`.
 """
 import os
 
-SRC = "/home/claude/hidraumiller.html"
+SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hidraumiller.html")
 DEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "www", "index.html")
 
 with open(SRC, "r", encoding="utf-8") as f:
