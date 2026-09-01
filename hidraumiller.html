@@ -352,6 +352,7 @@
       <button class="nav-item mobile-only-nav" data-nav="fornecedores"><span class="ic">🏭</span>Fornecedores</button>
       <button class="nav-item mobile-only-nav" data-nav="produtos"><span class="ic">📦</span>Produtos &amp; Serviços</button>
       <button class="nav-item mobile-only-nav" data-nav="config"><span class="ic">⚙️</span>Empresa</button>
+      <button class="nav-item mobile-only-nav" id="sidebar-auth-logout" data-auth-logout><span class="ic">🚪</span>Sair</button>
       <div class="nav-foot">Hidraumiller &middot; sistema interno</div>
     </nav>
 
@@ -4283,6 +4284,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function initFirebaseAuth(){
     if(!isNativeApp()){
       document.getElementById('auth-gate').hidden = true;
+      // Fora do app instalado o login nem existe (não tem como voltar pra
+      // essa tela), então esconde os botões "Sair" pra não confundir com
+      // uma opção que não faz nada.
+      document.querySelectorAll('[data-auth-logout]').forEach(function(b){ b.hidden = true; });
       return;
     }
     var subtitle = document.getElementById('auth-subtitle');
