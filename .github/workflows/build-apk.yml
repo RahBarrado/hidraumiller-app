@@ -1,0 +1,78 @@
+name: Gerar APK do app HidrauMiller
+
+# Roda automaticamente sempre que o código é atualizado na branch principal,
+# e também pode ser disparado manualmente pela aba "Actions" do GitHub.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código do projeto
+        uses: actions/checkout@v4
+
+      - name: Instalar Java (necessário para compilar o Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Instalar as dependências do projeto
+        run: npm ci
+
+      - name: Gerar www/index.html a partir do sistema (hidraumiller.html)
+        run: python3 build_www.py
+
+      - name: Sincronizar projeto Android (Capacitor)
+        run: npx cap sync android
+
+      - name: Dar permissão de execução ao gradlew
+        run: chmod +x android/gradlew
+
+      - name: Compilar o APK (versão debug, pronta para instalar)
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Renomear o APK com a data/hora da build
+        id: rename
+        run: |
+          mkdir -p dist
+          STAMP=$(date +'%Y-%m-%d_%H%M')
+          NAME="HidrauMiller_${STAMP}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "dist/$NAME"
+          echo "apk_name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Disponibilizar o APK como arquivo para baixar (aba Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.rename.outputs.apk_name }}
+          path: dist/${{ steps.rename.outputs.apk_name }}
+          retention-days: 90
+
+      - name: Publicar o APK na aba "Releases" (link fixo e fácil de achar)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: Último APK gerado
+          body: |
+            Build automática do app HidrauMiller.
+            Gerado em ${{ github.event.head_commit.timestamp || github.run_id }} a partir do commit ${{ github.sha }}.
+
+            Baixe o arquivo .apk abaixo e instale no celular Android
+            (pode ser necessário permitir "instalar de fontes desconhecidas" nas configurações do Android na primeira vez).
+          files: dist/${{ steps.rename.outputs.apk_name }}
+          prerelease: true
+          make_latest: false

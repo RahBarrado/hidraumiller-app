@@ -1,0 +1,17 @@
+# Dependências (o GitHub Actions reinstala tudo sozinho a cada build)
+node_modules/
+
+# Arquivos gerados pelo build - não precisam ser versionados
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/.cxx/
+dist/
+
+# Arquivos de sistema/IDE
+.DS_Store
+*.log
+.idea/
+*.iml

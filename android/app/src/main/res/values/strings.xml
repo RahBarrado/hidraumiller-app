@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HidrauMiller</string>
+    <string name="title_activity_main">HidrauMiller</string>
+    <string name="package_name">com.hidraumiller.app</string>
+    <string name="custom_url_scheme">com.hidraumiller.app</string>
+</resources>

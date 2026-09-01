@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores da marca HidrauMiller (mesmas usadas no sistema web) -->
+    <color name="colorPrimary">#204623</color>
+    <color name="colorPrimaryDark">#122e14</color>
+    <color name="colorAccent">#72b16a</color>
+    <color name="splashBackground">#F2EFE0</color>
+</resources>
