@@ -353,7 +353,7 @@
       <button class="nav-item mobile-only-nav" data-nav="produtos"><span class="ic">📦</span>Produtos &amp; Serviços</button>
       <button class="nav-item mobile-only-nav" data-nav="config"><span class="ic">⚙️</span>Empresa</button>
       <button class="nav-item mobile-only-nav" id="sidebar-auth-logout" data-auth-logout><span class="ic">🚪</span>Sair</button>
-      <div class="nav-foot">Hidraumiller &middot; sistema interno</div>
+      <div class="nav-foot" id="nav-foot">Hidraumiller &middot; sistema interno</div>
     </nav>
 
     <div class="main">
@@ -1282,12 +1282,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!el){ el=document.createElement('div'); el.className='rec'; el.dataset.key=obj.id; store.appendChild(el); }
     el.dataset.json = JSON.stringify(obj);
     persistStore(name);
+    cloudSyncWrite(name, obj);
   }
   function removeRec(name, id){
     var store=storeEl(name);
     var el=store.querySelector('.rec[data-key="'+id+'"]');
     if(el) el.remove();
     persistStore(name);
+    cloudSyncDelete(name, id);
   }
 
   function findCliente(id){ return DB.clientes.find(function(c){return c.id===id;}); }
@@ -3422,6 +3424,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       custom.map(function(cat){ return '<span class="chip" style="cursor:default;display:inline-flex;align-items:center;gap:6px;">'+esc(cat.ic||"🏷️")+' '+esc(cat.label)+'<button type="button" class="btn ghost sm" style="padding:0 2px;" data-del-categoria="'+cat.key+'" title="Remover categoria">×</button></span>'; }).join('')+
       '</div>';
     html += '</div></div>';
+    if(isNativeApp()) html += renderSyncPanel();
     return html;
   }
   document.getElementById('form-config').addEventListener('submit', function(e){
@@ -4002,6 +4005,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   document.body.addEventListener('click', function(e){
     var t;
     if((t=e.target.closest('[data-auth-logout]'))){ customConfirm('Sair da sua conta?', {okLabel:'Sair', danger:false}).then(function(ok){ if(ok && fbAuth) fbAuth.signOut(); }); }
+    else if(e.target.closest('[data-migrate-cloud]')){
+      customConfirm('Enviar todos os dados deste aparelho (clientes, orçamentos, OS, etc.) para a nuvem? Use isso apenas 1 vez - depois os dados ficam sempre sincronizados automaticamente, sem precisar repetir.', {okLabel:'Enviar dados', danger:false}).then(function(ok){ if(ok) migrateLocalDataToCloud(); });
+    }
     else if((t=e.target.closest('[data-set-orc-status]')) && CURRENT_ORC_ID){ setOrcamentoStatus(CURRENT_ORC_ID, t.dataset.setOrcStatus); }
     else if((t=e.target.closest('[data-edit-orc]'))){ document.getElementById('dlg-orcamento-detail').close(); openOrcamentoDialog(t.dataset.editOrc); }
     else if((t=e.target.closest('[data-print-orc]'))){ printOrcamento(t.dataset.printOrc); }
@@ -4248,7 +4254,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(typeof firebase !== 'undefined') return Promise.resolve();
     var srcs = [
       'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js',
-      'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js'
+      'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js',
+      'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-firestore-compat.js'
     ];
     function loadSeq(i){
       if(i>=srcs.length) return Promise.resolve();
@@ -4307,14 +4314,22 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       }
       fbAuth.onAuthStateChanged(function(user){
         var gate = document.getElementById('auth-gate');
+        var navFoot = document.getElementById('nav-foot');
         if(user){
           gate.hidden = true;
+          if(navFoot) navFoot.textContent = 'Logado como ' + (user.email || 'usuário');
+          initCloudSync();
         } else {
           gate.hidden = false;
           document.getElementById('form-auth').hidden = false;
           document.getElementById('btn-auth-toggle').hidden = false;
           document.getElementById('btn-auth-retry').hidden = true;
           authSetMode(AUTH_UI_MODE);
+          if(navFoot) navFoot.textContent = 'Hidraumiller · sistema interno';
+          detachSnapshotListeners();
+          fbDb = null;
+          CLOUD_SYNC.migrated = false;
+          CLOUD_SYNC.migrating = false;
         }
       }, function(err){
         authShowRetry('Erro ao verificar sessão: '+authErrorMessage(err));
@@ -4361,6 +4376,146 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       submitBtn.textContent = originalLabel;
     });
   });
+
+  /* ---------------- sincronização de dados (Firestore) ----------------
+     Etapa 2: depois de logada, cada aparelho pode enviar seus dados locais
+     para a nuvem (1 vez só, por um botão explícito - nunca automático, pra
+     nunca repetir o susto de uma migração silenciosa apagando dado real) e,
+     a partir daí, fica ouvindo a nuvem em tempo real (onSnapshot) - qualquer
+     alteração feita em outro aparelho logado na mesma conta aparece aqui
+     sozinha, e vice-versa. Continua tudo funcionando por baixo com
+     localStorage/DOM exatamente como antes (upsert/removeRec) - a nuvem é
+     só mais um destino que essas duas funções passam a escrever, quando a
+     sincronização está ativa. */
+  var fbDb = null;
+  var cloudUnsubscribers = [];
+  var CLOUD_SYNC = { active:false, migrated:false, migrating:false, applyingRemote:false, persistenceTried:false };
+
+  function cloudSyncWrite(name, obj){
+    if(!CLOUD_SYNC.active || CLOUD_SYNC.applyingRemote || !fbDb) return;
+    fbDb.collection(name).doc(obj.id).set(obj).catch(function(e){
+      console.error('falha ao sincronizar com a nuvem ('+name+'):', e);
+    });
+  }
+  function cloudSyncDelete(name, id){
+    if(!CLOUD_SYNC.active || CLOUD_SYNC.applyingRemote || !fbDb) return;
+    fbDb.collection(name).doc(id).delete().catch(function(e){
+      console.error('falha ao apagar na nuvem ('+name+'):', e);
+    });
+  }
+  // Aplica uma mudança vinda da nuvem localmente sem re-enviar pra nuvem de
+  // volta (senão viraria um loop infinito entre os aparelhos).
+  function applyRemoteUpsert(name, obj){
+    CLOUD_SYNC.applyingRemote = true;
+    try{ upsert(name, obj); } finally { CLOUD_SYNC.applyingRemote = false; }
+  }
+  function applyRemoteRemove(name, id){
+    CLOUD_SYNC.applyingRemote = true;
+    try{ removeRec(name, id); } finally { CLOUD_SYNC.applyingRemote = false; }
+  }
+  function detachSnapshotListeners(){
+    cloudUnsubscribers.forEach(function(u){ try{ u(); }catch(e){} });
+    cloudUnsubscribers = [];
+    CLOUD_SYNC.active = false;
+  }
+  function attachSnapshotListeners(){
+    detachSnapshotListeners();
+    CLOUD_SYNC.active = true;
+    STORE_NAMES.forEach(function(name){
+      var unsub = fbDb.collection(name).onSnapshot(function(snapshot){
+        var changed = false;
+        snapshot.docChanges().forEach(function(change){
+          changed = true;
+          if(change.type === 'removed') applyRemoteRemove(name, change.doc.id);
+          else applyRemoteUpsert(name, change.doc.data());
+        });
+        if(changed){
+          loadDBFromStores();
+          render();
+        }
+      }, function(err){
+        console.error('erro ouvindo mudanças na nuvem ('+name+'):', err);
+      });
+      cloudUnsubscribers.push(unsub);
+    });
+  }
+  // Confere se este login já enviou os dados locais pra nuvem alguma vez
+  // (documento _meta/sync). Se sim, só liga a escuta em tempo real; se não,
+  // deixa o botão de envio disponível na tela Empresa (renderSyncPanel).
+  function initCloudSync(){
+    try{ fbDb = firebase.firestore(); }
+    catch(e){ console.error('erro iniciando o Firestore:', e); return; }
+    if(!CLOUD_SYNC.persistenceTried){
+      CLOUD_SYNC.persistenceTried = true;
+      try{
+        fbDb.enablePersistence({synchronizeTabs:true}).catch(function(e){
+          /* modo offline indisponível (ex.: mais de uma aba aberta) - a sincronização ao vivo continua funcionando normalmente, só sem cache offline */
+        });
+      }catch(e){}
+    }
+    fbDb.collection('_meta').doc('sync').get().then(function(doc){
+      CLOUD_SYNC.migrated = !!(doc.exists && doc.data() && doc.data().migrated);
+      if(CLOUD_SYNC.migrated) attachSnapshotListeners();
+      if(VIEW==='config') render();
+    }).catch(function(e){
+      console.error('erro verificando status de sincronização:', e);
+    });
+  }
+  function renderSyncPanel(){
+    var html = '<div class="panel"><div class="panel-head"><h2>☁️ Sincronização na nuvem</h2></div><div class="panel-body">';
+    if(!fbAuth || !fbAuth.currentUser){
+      html += '<div class="hint">Faça login para ativar a sincronização na nuvem.</div>';
+    } else if(CLOUD_SYNC.migrating){
+      html += '<div class="hint">Enviando seus dados para a nuvem, aguarde...</div>';
+    } else if(CLOUD_SYNC.migrated){
+      html += '<div class="detail-grid">'+dt("Status","🟢 Sincronizado")+dt("Conta",esc(fbAuth.currentUser.email||"—"))+'</div>'+
+        '<p class="hint" style="margin-top:8px;">Seus dados são salvos automaticamente na nuvem e atualizados em tempo real em qualquer aparelho logado com essa conta.</p>';
+    } else {
+      html += '<p class="hint">Envie os orçamentos, OS, clientes e demais dados que já existem neste aparelho para a nuvem. Depois disso, qualquer login autorizado passa a ver os mesmos dados, sempre atualizados.</p>'+
+        '<p class="hint" style="color:#a15c00;">Use esse botão apenas 1 vez. Depois de enviar, os dados ficam sempre sincronizados sozinhos - não precisa repetir.</p>'+
+        '<button class="btn primary" data-migrate-cloud>Enviar meus dados para a nuvem</button>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+  function migrateLocalDataToCloud(){
+    if(!fbDb || CLOUD_SYNC.migrating || CLOUD_SYNC.migrated) return;
+    CLOUD_SYNC.migrating = true;
+    if(VIEW==='config') render();
+    var writes = [];
+    STORE_NAMES.forEach(function(name){
+      loadList(name).forEach(function(obj){ if(obj && obj.id) writes.push({name:name, obj:obj}); });
+    });
+    var CHUNK = 450; // margem abaixo do limite de 500 operações por lote do Firestore
+    var chunks = [];
+    for(var i=0;i<writes.length;i+=CHUNK) chunks.push(writes.slice(i,i+CHUNK));
+    function runChunk(idx){
+      if(idx>=chunks.length) return Promise.resolve();
+      var batch = fbDb.batch();
+      chunks[idx].forEach(function(w){ batch.set(fbDb.collection(w.name).doc(w.obj.id), w.obj); });
+      return batch.commit().then(function(){ return runChunk(idx+1); });
+    }
+    runChunk(0).then(function(){
+      // grava o "migrado" por último: se algo falhar antes, o botão continua
+      // disponível pra tentar de novo, em vez de marcar uma migração parcial
+      // como concluída (mesmo cuidado de nunca perder/mascarar dado real).
+      return fbDb.collection('_meta').doc('sync').set({
+        migrated:true,
+        migradoEm: firebase.firestore.FieldValue.serverTimestamp(),
+        migradoPor: (fbAuth.currentUser && fbAuth.currentUser.email) || null
+      });
+    }).then(function(){
+      CLOUD_SYNC.migrated = true;
+      CLOUD_SYNC.migrating = false;
+      attachSnapshotListeners();
+      if(VIEW==='config') render();
+      toast('Dados enviados para a nuvem com sucesso!');
+    }).catch(function(e){
+      CLOUD_SYNC.migrating = false;
+      if(VIEW==='config') render();
+      toast('Erro ao enviar dados: '+(e && e.message ? e.message : e));
+    });
+  }
 
   /* ---------------- init ---------------- */
   hydrateAllStoresFromLocalStorage();
