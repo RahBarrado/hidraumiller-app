@@ -770,6 +770,7 @@
   </dialog>
 
   <div class="toast-wrap" id="toast-wrap"></div>
+  <input type="file" id="backup-import-input" accept=".json,application/json" hidden>
 </div>
 
 <div id="auth-gate" class="auth-gate">
@@ -3424,6 +3425,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       custom.map(function(cat){ return '<span class="chip" style="cursor:default;display:inline-flex;align-items:center;gap:6px;">'+esc(cat.ic||"🏷️")+' '+esc(cat.label)+'<button type="button" class="btn ghost sm" style="padding:0 2px;" data-del-categoria="'+cat.key+'" title="Remover categoria">×</button></span>'; }).join('')+
       '</div>';
     html += '</div></div>';
+    html += renderBackupPanel();
     if(isNativeApp()) html += renderSyncPanel();
     return html;
   }
@@ -4005,6 +4007,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   document.body.addEventListener('click', function(e){
     var t;
     if((t=e.target.closest('[data-auth-logout]'))){ customConfirm('Sair da sua conta?', {okLabel:'Sair', danger:false}).then(function(ok){ if(ok && fbAuth) fbAuth.signOut(); }); }
+    else if(e.target.closest('[data-export-backup]')){ exportDataBackup(); }
+    else if(e.target.closest('[data-import-backup]')){ document.getElementById('backup-import-input').click(); }
     else if(e.target.closest('[data-migrate-cloud]')){
       customConfirm('Enviar todos os dados deste aparelho (clientes, orçamentos, OS, etc.) para a nuvem? Use isso apenas 1 vez - depois os dados ficam sempre sincronizados automaticamente, sem precisar repetir.', {okLabel:'Enviar dados', danger:false}).then(function(ok){ if(ok) migrateLocalDataToCloud(); });
     }
@@ -4460,6 +4464,91 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }).catch(function(e){
       console.error('erro verificando status de sincronização:', e);
     });
+  }
+  /* ---------------- backup manual (exportar/importar arquivo) ----------------
+     Antes da Etapa 2, cada aparelho/contexto tinha seus próprios dados
+     locais isolados (ex.: o link do navegador que já tem os orçamentos
+     reais, e o app instalado, que começa vazio). Pra migração pra nuvem
+     enviar o dado CERTO, dá pra exportar os dados de um lugar (um arquivo
+     .json) e importar no outro antes de usar o botão "Enviar meus dados
+     para a nuvem" - sempre uma ação explícita da pessoa, nunca automática. */
+  function buildBackupPayload(){
+    var payload = { app:'hidraumiller', version:1, exportedAt:new Date().toISOString(), data:{} };
+    STORE_NAMES.forEach(function(name){
+      payload.data[name] = (name==='config') ? (DB.config||defaultConfig()) : loadList(name);
+    });
+    return payload;
+  }
+  function exportDataBackup(){
+    var json = JSON.stringify(buildBackupPayload(), null, 2);
+    var fileName = 'hidraumiller_backup_'+todayISO()+'.json';
+    if(isNativeApp() && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem && window.Capacitor.Plugins.Share){
+      var Filesystem = window.Capacitor.Plugins.Filesystem;
+      var Share = window.Capacitor.Plugins.Share;
+      var base64 = btoa(unescape(encodeURIComponent(json)));
+      Filesystem.writeFile({ path:fileName, data:base64, directory:'CACHE' }).then(function(res){
+        return Share.share({ title:'Backup HidrauMiller', url:res.uri, dialogTitle:'Compartilhar backup' });
+      }).catch(function(err){
+        if(err && err.message && err.message.indexOf('cancel')>=0) return;
+        customAlert('Não consegui gerar o backup agora. Tente novamente.');
+      });
+      return;
+    }
+    if(window.claude && typeof window.claude.use === 'function'){
+      var blob = new Blob([json], {type:'application/json'});
+      Promise.resolve(window.claude.use('downloads')).then(function(downloads){
+        if(!downloads){ customAlert('Não consegui salvar o backup neste navegador. Tente de novo.'); return; }
+        downloads.save({filename:fileName, data:blob}).then(function(){
+          toast('Backup salvo');
+        }).catch(function(err){
+          if(err && err.code==='declined') return;
+          customAlert('Não consegui salvar o backup agora. Tente de novo.');
+        });
+      }).catch(function(){ customAlert('Não consegui salvar o backup agora. Tente de novo.'); });
+      return;
+    }
+    customAlert('Não consegui gerar o backup neste ambiente.');
+  }
+  function importDataBackup(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var payload = JSON.parse(reader.result);
+        if(!payload || !payload.data) throw new Error('arquivo não é um backup válido do HidrauMiller');
+        var total = 0;
+        STORE_NAMES.forEach(function(name){
+          var val = payload.data[name];
+          if(name==='config'){
+            if(val && val.id) { upsert('config', val); total++; }
+          } else if(Array.isArray(val)){
+            val.forEach(function(obj){ if(obj && obj.id){ upsert(name, obj); total++; } });
+          }
+        });
+        loadDBFromStores();
+        render();
+        customAlert('Backup importado: '+total+' registro(s) carregado(s) neste aparelho.');
+      }catch(e){
+        customAlert('Não consegui importar esse arquivo. Confira se é um backup gerado pelo próprio HidrauMiller (Empresa > Backup de dados > Exportar). Detalhe técnico: '+(e&&e.message?e.message:e));
+      }
+    };
+    reader.readAsText(file);
+  }
+  document.getElementById('backup-import-input').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    var input = e.target;
+    if(!file) return;
+    customConfirm('Importar este backup vai adicionar/atualizar os dados dele neste aparelho (não apaga o que já existe aqui - só substitui registros com o mesmo ID/número). Continuar?', {okLabel:'Importar', danger:false}).then(function(ok){
+      if(ok) importDataBackup(file);
+      input.value = '';
+    });
+  });
+  function renderBackupPanel(){
+    return '<div class="panel"><div class="panel-head"><h2>💾 Backup de dados</h2></div><div class="panel-body">'+
+      '<p class="hint">Exporta todos os dados deste aparelho (clientes, orçamentos, OS, etc.) em um arquivo. Use para guardar uma cópia de segurança, ou para levar os dados de um aparelho para outro (por exemplo: do navegador para o app instalado) antes de enviar para a nuvem.</p>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;">'+
+        '<button type="button" class="btn" data-export-backup>Exportar backup</button>'+
+        '<button type="button" class="btn ghost" data-import-backup>Importar backup</button>'+
+      '</div></div></div>';
   }
   function renderSyncPanel(){
     var html = '<div class="panel"><div class="panel-head"><h2>☁️ Sincronização na nuvem</h2></div><div class="panel-body">';
