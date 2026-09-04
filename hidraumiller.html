@@ -397,6 +397,7 @@
       <button class="nav-item mobile-only-nav" data-nav="fornecedores"><span class="ic">🏭</span>Fornecedores</button>
       <button class="nav-item mobile-only-nav" data-nav="produtos"><span class="ic">📦</span>Produtos &amp; Serviços</button>
       <button class="nav-item mobile-only-nav" data-nav="config"><span class="ic">⚙️</span>Empresa</button>
+      <button class="nav-item mobile-only-nav" data-nav="lixeira"><span class="ic">🗑️</span>Lixeira</button>
       <button class="nav-item mobile-only-nav" id="sidebar-auth-logout" data-auth-logout><span class="ic">🚪</span>Sair</button>
       <div class="nav-foot" id="nav-foot">Hidraumiller &middot; sistema interno</div>
     </nav>
@@ -862,31 +863,12 @@
 <div id="data-stores" hidden>
   <div id="store-config" class="store"><div class="rec" data-key="config" data-json='{"id": "config", "nome": "HidrauMiller", "responsavel": "Miller Piva", "telefone": "(38) 99849-7738", "email": "millerpiva@gmail.com", "cidade": "Unaí MG", "cnpj": "", "endereco": "", "pixChave": "(38) 99999-1234", "pixBanco": "Banco do Brasil", "pixTitular": "Miller Piva Ltda"}'></div></div>
   <div id="store-clientes" class="store"><div class="rec" data-key="cli_1" data-json='{"id": "cli_1", "nome": "MAIRON MANICA", "telefone": "(38) 99876-5432", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_1", "nome": "ESCAVADEIRA VOLVO 140 PRIME", "numeroSerie": "", "obs": ""}, {"id": "maq_2", "nome": "RETROESCAVADEIRA CASE 580", "numeroSerie": "", "obs": ""}, {"id": "maq_3", "nome": "MINICARREGADEIRA BOBCAT S70", "numeroSerie": "", "obs": ""}]}'></div>
-    <div class="rec" data-key="cli_2" data-json='{"id": "cli_2", "nome": "FAZENDA SÃO JOSÉ", "telefone": "(38) 99711-2233", "propriedade": "Sítio São José", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_4", "nome": "TRATOR NEW HOLLAND T7.245", "numeroSerie": "", "obs": ""}]}'></div>
-    <div class="rec" data-key="cli_3" data-json='{"id": "cli_3", "nome": "TERRAPLANAGEM SANTOS LTDA", "telefone": "(38) 99622-4488", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_5", "nome": "MOTONIVELADORA CATERPILLAR 120K", "numeroSerie": "", "obs": ""}]}'></div>
   </div>
   <div id="store-orcamentos" class="store"><div class="rec" data-key="orc_1" data-json='{"id": "orc_1", "numero": "ORC-2026-00193", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-08-27", "validade": 5, "semValidade": true, "formaPagamento": "A combinar", "itensServico": [{"desc": "BLOCO DIREITO P1 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "BLOCO ESQUERDO P2 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 570, "tipo": "produto"}, {"desc": "RETENTOR DA BOMBA K3V63", "qtd": 1, "valor": 180, "tipo": "produto"}, {"desc": "VÁLVULA SOLENÓIDE PROPORCIONAL", "qtd": 1, "valor": 1930, "tipo": "produto"}, {"desc": "SUPORTE DO PLATÔ", "qtd": 1, "valor": 1970, "tipo": "produto"}, {"desc": "LAPIDAR SUPORTE DO PLATÔ", "qtd": 1, "valor": 600, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P1", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P2", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO E PLACA DIREITA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO DO BLOCO E PLACA ESQUERDA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "DESMONTAR E MONTAR A BOMBA K3V63, TROCAR REPARO,REVISAR E RETIFICAR CONTROLADORAS, REVISAR BOMBA DE CARGA", "qtd": 1, "valor": 3000, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "rascunho", "historico": [{"ts": "2026-08-27T12:00:00.000Z", "texto": "Orçamento criado — total R$ 13.110,00 · 12 item(ns)"}]}'></div>
-    <div class="rec" data-key="orc_2" data-json='{"id": "orc_2", "numero": "ORC-2026-00001", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "MANUTENÇÃO EM PISTÃO", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-05-10", "validade": 5, "semValidade": true, "formaPagamento": "Parcelado em 3x (Pix)", "parcelas": 3, "itensServico": [{"desc": "DESMONTAR E MONTAR BOMBA K3V63, TROCAR REPARO", "qtd": 1, "valor": 5530, "tipo": "servico"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 2000, "tipo": "produto"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-05-10T12:00:00.000Z", "texto": "Orçamento criado — total R$ 7.530,00 · 2 item(ns)"}]}'></div>
-    <div class="rec" data-key="orc_3" data-json='{"id": "orc_3", "numero": "ORC-2026-00004", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "RETROESCAVADEIRA CASE 580", "maquinaId": "maq_2", "data": "2026-07-05", "validade": 5, "semValidade": true, "formaPagamento": "Boleto a prazo", "prazoDias": 30, "itensServico": [{"desc": "REVISÃO GERAL RETROESCAVADEIRA CASE 580", "qtd": 1, "valor": 12460, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-07-05T12:00:00.000Z", "texto": "Orçamento criado — total R$ 12.460,00 · 1 item(ns)"}]}'></div>
-    <div class="rec" data-key="orc_4" data-json='{"id": "orc_4", "numero": "ORC-2026-00006", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "MINICARREGADEIRA BOBCAT S70", "maquinaId": "maq_3", "data": "2026-07-28", "validade": 5, "semValidade": true, "formaPagamento": "Pix parcelado em 2x", "parcelas": 2, "itensServico": [{"desc": "TROCA DE MANGUEIRAS HIDRÁULICAS", "qtd": 1, "valor": 1290, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-07-28T12:00:00.000Z", "texto": "Orçamento criado — total R$ 1.290,00 · 1 item(ns)"}]}'></div>
-    <div class="rec" data-key="orc_5" data-json='{"id": "orc_5", "numero": "ORC-2026-00002", "clienteId": "cli_2", "clienteNome": "FAZENDA SÃO JOSÉ", "maquina": "TRATOR NEW HOLLAND T7.245", "maquinaId": "maq_4", "data": "2026-08-30", "validade": 7, "semValidade": false, "formaPagamento": "Entrada + saldo (Pix)", "itensServico": [{"desc": "TROCA DE CILINDRO HIDRÁULICO DE DIREÇÃO", "qtd": 1, "valor": 1800, "tipo": "produto"}, {"desc": "KIT VEDAÇÃO CILINDRO", "qtd": 1, "valor": 320, "tipo": "produto"}, {"desc": "MÃO DE OBRA - INSTALAÇÃO", "qtd": 1, "valor": 450, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-08-30T12:00:00.000Z", "texto": "Orçamento criado — total R$ 2.570,00 · 3 item(ns)"}, {"ts": "2026-08-31T09:00:00.000Z", "texto": "Orçamento aprovado pelo cliente"}]}'></div>
-    <div class="rec" data-key="orc_6" data-json='{"id": "orc_6", "numero": "ORC-2026-00003", "clienteId": "cli_3", "clienteNome": "TERRAPLANAGEM SANTOS LTDA", "maquina": "MOTONIVELADORA CATERPILLAR 120K", "maquinaId": "maq_5", "data": "2026-08-18", "validade": 5, "semValidade": false, "formaPagamento": "A combinar", "itensServico": [{"desc": "REPARO BOMBA HIDRÁULICA PRINCIPAL", "qtd": 1, "valor": 4200, "tipo": "servico"}, {"desc": "FILTRO HIDRÁULICO", "qtd": 2, "valor": 380, "tipo": "produto"}, {"desc": "ÓLEO HIDRÁULICO ISO 68 (20L)", "qtd": 1, "valor": 540, "tipo": "produto"}], "listaCompras": [], "obs": "Cliente optou por fazer com outra oficina", "desconto": 0, "status": "reprovado", "historico": [{"ts": "2026-08-18T12:00:00.000Z", "texto": "Orçamento criado — total R$ 5.500,00 · 3 item(ns)"}, {"ts": "2026-08-20T15:00:00.000Z", "texto": "Orçamento enviado ao cliente"}, {"ts": "2026-08-24T10:00:00.000Z", "texto": "Orçamento reprovado"}]}'></div>
   </div>
   <div id="store-os" class="store">
-    <div class="rec" data-key="os_2" data-json='{"id": "os_2", "numero": "OS-2026-0002", "orcamentoOrigemId": "orc_2", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "MANUTENÇÃO EM PISTÃO", "solicitante": "", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "itens": [{"desc": "DESMONTAR E MONTAR BOMBA K3V63, TROCAR REPARO", "qtd": 1, "valor": 5530, "tipo": "servico"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 2000, "tipo": "produto"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-05-15", "dataConclusao": "", "listaCompras": [], "valorTotal": 7530, "formaPagamento": "Parcelado em 3x (Pix)", "parcelas": 3, "prazoDias": null, "fotos": []}'></div>
-    <div class="rec" data-key="os_3" data-json='{"id": "os_3", "numero": "OS-2026-0005", "orcamentoOrigemId": "orc_3", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "", "solicitante": "", "maquina": "RETROESCAVADEIRA CASE 580", "maquinaId": "maq_2", "itens": [{"desc": "REVISÃO GERAL RETROESCAVADEIRA CASE 580", "qtd": 1, "valor": 12460, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "concluida", "dataAbertura": "2026-07-10", "dataConclusao": "2026-07-25", "listaCompras": [], "valorTotal": 12460, "formaPagamento": "Boleto a prazo", "parcelas": null, "prazoDias": 30, "fotos": []}'></div>
-    <div class="rec" data-key="os_4" data-json='{"id": "os_4", "numero": "OS-2026-0007", "orcamentoOrigemId": "orc_4", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "", "solicitante": "", "maquina": "MINICARREGADEIRA BOBCAT S70", "maquinaId": "maq_3", "itens": [{"desc": "TROCA DE MANGUEIRAS HIDRÁULICAS", "qtd": 1, "valor": 1290, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-08-01", "dataConclusao": "", "listaCompras": [], "valorTotal": 1290, "formaPagamento": "Pix parcelado em 2x", "parcelas": 2, "prazoDias": null, "fotos": []}'></div>
-    <div class="rec" data-key="os_5" data-json='{"id": "os_5", "numero": "OS-2026-0003", "orcamentoOrigemId": "orc_5", "clienteId": "cli_2", "clienteNome": "FAZENDA SÃO JOSÉ", "titulo": "", "solicitante": "", "maquina": "TRATOR NEW HOLLAND T7.245", "maquinaId": "maq_4", "itens": [{"desc": "TROCA DE CILINDRO HIDRÁULICO DE DIREÇÃO", "qtd": 1, "valor": 1800, "tipo": "servico"}, {"desc": "KIT VEDAÇÃO CILINDRO", "qtd": 1, "valor": 320, "tipo": "produto"}, {"desc": "MÃO DE OBRA - INSTALAÇÃO", "qtd": 1, "valor": 450, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-08-31", "dataConclusao": "", "listaCompras": [], "valorTotal": 2570, "formaPagamento": "Entrada + saldo (Pix)", "parcelas": null, "prazoDias": null, "fotos": []}'></div>
   </div>
   <div id="store-pagamentos" class="store">
-    <div class="rec" data-key="pag_1" data-json='{"id": "pag_1", "osId": "os_2", "valor": 2500, "valorPago": 2500, "forma": "Pix", "vencimento": "2026-06-15", "dataPagamento": "2026-06-10", "status": "pago", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 1, "obs": ""}'></div>
-    <div class="rec" data-key="pag_2" data-json='{"id": "pag_2", "osId": "os_2", "valor": 2500, "valorPago": 0, "forma": "Pix", "vencimento": "2026-07-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 2, "obs": ""}'></div>
-    <div class="rec" data-key="pag_3" data-json='{"id": "pag_3", "osId": "os_2", "valor": 2530, "valorPago": 0, "forma": "Pix", "vencimento": "2026-10-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 3, "obs": ""}'></div>
-    <div class="rec" data-key="pag_4" data-json='{"id": "pag_4", "osId": "os_3", "valor": 12460, "valorPago": 0, "forma": "Boleto", "vencimento": "2026-08-10", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 1, "parcelaAtual": 1, "obs": ""}'></div>
-    <div class="rec" data-key="pag_5" data-json='{"id": "pag_5", "osId": "os_4", "valor": 890, "valorPago": 300, "forma": "Pix", "vencimento": "2026-08-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 2, "parcelaAtual": 1, "obs": ""}'></div>
-    <div class="rec" data-key="pag_6" data-json='{"id": "pag_6", "osId": "os_4", "valor": 400, "valorPago": 0, "forma": "Pix", "vencimento": "2026-10-01", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 2, "parcelaAtual": 2, "obs": ""}'></div>
-    <div class="rec" data-key="pag_7" data-json='{"id": "pag_7", "osId": "os_5", "valor": 770, "valorPago": 770, "forma": "Pix", "vencimento": "2026-08-30", "dataPagamento": "2026-08-31", "status": "pago", "ehEntrada": true, "parcelaTotal": 2, "parcelaAtual": 1, "obs": ""}'></div>
-    <div class="rec" data-key="pag_8" data-json='{"id": "pag_8", "osId": "os_5", "valor": 1800, "valorPago": 0, "forma": "Pix", "vencimento": "2026-08-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "obs": ""}'></div>
   </div>
   <div id="store-nf" class="store"></div>
   <div id="store-fornecedores" class="store"></div>
@@ -1323,10 +1305,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       try{ return JSON.parse(c.dataset.json); }catch(e){ return null; }
     }).filter(Boolean);
   }
-  // Tipos que passam pela Lixeira (soft-delete) - "os" fica de fora porque
-  // OS nunca é excluída de verdade, só cancelada (status), e "config" é o
-  // cadastro único da empresa.
-  var LIXEIRA_TIPOS = ['clientes','orcamentos','pagamentos','nf','fornecedores','despesas','produtos'];
+  // Tipos que passam pela Lixeira (soft-delete) - "config" fica de fora
+  // porque é o cadastro único da empresa. "os" foi incluída a pedido da
+  // Raissa (antes só dava pra cancelar, nunca excluir de verdade) - ao
+  // excluir uma OS, os recebimentos ainda em aberto vinculados a ela também
+  // vão junto pra lixeira (ver excluirOSComPagamentos/restaurarOSComPagamentos),
+  // pra não sobrar recebimento "órfão" apontando pra uma OS sumida.
+  var LIXEIRA_TIPOS = ['clientes','orcamentos','os','pagamentos','nf','fornecedores','despesas','produtos'];
   function loadListActive(name){
     return loadList(name).filter(function(r){ return !r.deletedEm; });
   }
@@ -1336,7 +1321,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(DB.config.markupPadrao==null) DB.config.markupPadrao = 40;
     DB.clientes = loadListActive('clientes');
     DB.orcamentos = loadListActive('orcamentos');
-    DB.os = loadList('os');
+    DB.os = loadListActive('os');
     // migração: o status "aberta" foi removido (unificado com "Em andamento") - OS antigas salvas com esse status ainda precisam de um rótulo válido
     DB.os.forEach(function(o){ if(o.status==='aberta'){ o.status='em_andamento'; upsert('os', o); } });
     DB.pagamentos = loadListActive('pagamentos');
@@ -1421,6 +1406,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!raw) return;
     delete raw.deletedEm;
     upsert(name, raw);
+  }
+  // Excluir uma OS leva junto pra lixeira os recebimentos dela que ainda
+  // estavam ativos (senão ficariam "órfãos", apontando pra uma OS que
+  // sumiu das telas). Cada um recebe origemCascataOsId pra saber que foi
+  // excluído em cascata por causa da OS - e não porque alguém excluiu
+  // aquele recebimento avulso - e assim voltar junto se a OS for restaurada.
+  function excluirOSComPagamentos(id){
+    DB.pagamentos.filter(function(p){ return p.osId===id; }).forEach(function(p){
+      var raw = loadList('pagamentos').find(function(r){ return r.id===p.id; });
+      if(raw && !raw.deletedEm){ raw.origemCascataOsId = id; raw.deletedEm = new Date().toISOString(); upsert('pagamentos', raw); }
+    });
+    softDelete('os', id);
+  }
+  function restaurarOSComPagamentos(id){
+    restoreRec('os', id);
+    loadList('pagamentos').filter(function(p){ return p.deletedEm && p.origemCascataOsId===id; }).forEach(function(p){
+      restoreRec('pagamentos', p.id);
+      var updated = loadList('pagamentos').find(function(r){ return r.id===p.id; });
+      if(updated && updated.origemCascataOsId){ delete updated.origemCascataOsId; upsert('pagamentos', updated); }
+    });
   }
   // Roda na abertura do app: qualquer item na lixeira há mais de 30 dias é
   // apagado de vez (aí sim, sem volta).
@@ -3225,6 +3230,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       '<button class="btn sm no-print" data-dup-os="'+o.id+'">📋 Duplicar</button>'+
       '<button class="btn sm" data-nova-para-os="pagamento" data-os-id="'+o.id+'">+ Recebimento</button>'+
       '<button class="btn sm" data-nova-para-os="nf" data-os-id="'+o.id+'">+ Nota fiscal</button>'+
+      '<button class="btn sm danger no-print" data-excluir-os="'+o.id+'">🗑️ Excluir OS</button>'+
       '</div>';
     document.getElementById('os-detail-body').innerHTML = html;
     dlg.showModal();
@@ -4137,6 +4143,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   /* ---------------- LIXEIRA (itens excluídos, recuperáveis por 30 dias) ---------------- */
   var LIXEIRA_TIPO_META = {
     clientes:{icon:'👤', label:'Cliente'}, orcamentos:{icon:'📝', label:'Orçamento'},
+    os:{icon:'🔧', label:'OS'},
     pagamentos:{icon:'💰', label:'Recebimento'}, nf:{icon:'🧾', label:'Nota fiscal'},
     fornecedores:{icon:'🏭', label:'Fornecedor'}, despesas:{icon:'📉', label:'Despesa'},
     produtos:{icon:'📦', label:'Produto/Serviço'}
@@ -4144,6 +4151,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function lixeiraDescreverItem(tipo, r){
     if(tipo==='clientes') return {titulo:r.nome||'(sem nome)', subtitulo:r.telefone||''};
     if(tipo==='orcamentos') return {titulo:(r.numero||'')+' — '+(r.clienteNome||''), subtitulo:money(itemsTotal(r.itensServico)-(Number(r.desconto)||0))};
+    if(tipo==='os') return {titulo:(r.numero||'')+' — '+(r.clienteNome||''), subtitulo: r.titulo || r.maquina || money(r.valorTotal)};
     if(tipo==='pagamentos'){
       var os = findOS(r.osId);
       return {titulo:money(r.valor)+' · vencimento '+dateBR(r.vencimento), subtitulo: os? 'OS '+os.numero+' — '+(os.clienteNome||'') : ''};
@@ -4162,7 +4170,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         itens.push(Object.assign({tipo:tipo, rec:r}, lixeiraDescreverItem(tipo, r)));
       });
     });
-    if(!itens.length) return emptyState("🗑️","A lixeira está vazia","Itens excluídos (clientes, orçamentos, recebimentos, NF, despesas, fornecedores e produtos) ficam aqui por "+LIXEIRA_DIAS+" dias, prontos para restaurar caso tenha sido engano.");
+    if(!itens.length) return emptyState("🗑️","A lixeira está vazia","Itens excluídos (clientes, orçamentos, OS, recebimentos, NF, despesas, fornecedores e produtos) ficam aqui por "+LIXEIRA_DIAS+" dias, prontos para restaurar caso tenha sido engano.");
     itens.sort(function(a,b){ return (b.rec.deletedEm||'').localeCompare(a.rec.deletedEm||''); });
     return '<div class="hint" style="margin-bottom:12px;">Itens excluídos ficam aqui por '+LIXEIRA_DIAS+' dias e depois são apagados definitivamente. Clique em Restaurar para trazer de volta.</div>'+
       '<div class="rec-list">'+itens.map(function(it){
@@ -5589,8 +5597,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else if((t=e.target.closest('[data-restore-lixeira]'))){
       var partes = t.dataset.restoreLixeira.split('|'), tipoR=partes[0], idR=partes[1];
       var metaR = LIXEIRA_TIPO_META[tipoR];
-      restoreRec(tipoR, idR); loadDBFromStores(); render();
+      if(tipoR==='os') restaurarOSComPagamentos(idR); else restoreRec(tipoR, idR);
+      loadDBFromStores(); render();
       toast((metaR?metaR.label:'Item')+' restaurado');
+    }
+    else if((t=e.target.closest('[data-excluir-os]'))){
+      var delOsId = t.dataset.excluirOs;
+      customConfirm('Excluir esta OS? Os recebimentos em aberto vinculados a ela também vão para a Lixeira, e voltam juntos se você restaurar. Dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
+        if(!ok) return;
+        excluirOSComPagamentos(delOsId);
+        loadDBFromStores();
+        document.getElementById('dlg-os-detail').close();
+        render();
+        toast('OS movida para a lixeira');
+      });
     }
     else if((t=e.target.closest('[data-dup-os]'))){ var dupOsId=t.dataset.dupOs; customConfirm('Duplicar esta OS? Uma nova OS (com número próprio) será criada com os mesmos itens, sem recebimentos/NF vinculados.', {okLabel:'Duplicar', danger:false}).then(function(ok){ if(ok) duplicateOS(dupOsId); }); }
     else if((t=e.target.closest('[data-print-lista]'))){ printListaCompras(t.dataset.printLista); }
