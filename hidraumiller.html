@@ -99,6 +99,15 @@
   .search-result .title{font-weight:600;font-size:13.5px;}
   .search-result .sub{font-size:11.5px;color:var(--muted);}
   .search-empty{padding:12px;font-size:12.5px;color:var(--muted);}
+  .cliente-filtro-resumo{font-size:13px;color:var(--ink-soft);margin:-4px 0 14px;padding:8px 12px;background:var(--surface-2);border-radius:var(--radius-sm);}
+  .cliente-filtro-resumo b{color:var(--ink);}
+  /* tags de filtro ativo (cliente / item específico / OS) - resultado de
+     selecionar algo na busca única do topo enquanto já se está dentro do
+     módulo. Cada tag some sozinha ao clicar no seu ✕. */
+  .filtro-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .filtro-tag{display:inline-flex;align-items:center;gap:4px;padding:6px 6px 6px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent-strong);font-size:12.5px;font-weight:600;}
+  .filtro-tag button{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:none;border:none;color:inherit;cursor:pointer;font-size:12px;line-height:1;padding:0;}
+  .filtro-tag button:hover{background:rgba(0,0,0,.1);}
   .mobile-global-search{padding:0 16px 12px;}
 
   /* ---------- Settings menu (⋮) ---------- */
@@ -129,10 +138,13 @@
   /* ---------- Cards / KPI ---------- */
   .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
   .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);min-width:0;}
+  .kpi.kpi-clickable{cursor:pointer;}
+  .kpi.kpi-clickable:hover{border-color:var(--accent);}
   .kpi .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;}
   .kpi .value{font-family:var(--font-mono);font-size:26px;margin-top:6px;font-weight:600;}
   .kpi .value.accent{color:var(--accent);}
   .kpi .value.bad{color:var(--bad);}
+  .kpi .value.good{color:var(--good);}
   .kpi-sub{margin-top:5px;font-size:11.5px;color:var(--muted);}
 
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;}
@@ -219,13 +231,44 @@
   .dialog-head h3{font-size:17px;}
   .dialog-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;line-height:1;padding:4px;}
   .dialog-body{padding:18px 20px;overflow-y:auto;max-height:calc(88vh - 130px);}
-  .dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line);}
+  .dialog-foot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--line);}
+  /* O botão "Excluir" é sempre o 1º botão do rodapé nos diálogos de edição.
+     Sem isto, num diálogo com 4 botões (Excluir/Cancelar/Salvar/Enviar) a
+     tela era estreita demais (celular) e o "Excluir" ficava empurrado pra
+     fora da área visível, sem rolagem - existia no código mas a pessoa não
+     conseguia alcançar/ver o botão. Com margin-right:auto ele fica isolado
+     à esquerda, e com flex-wrap:wrap acima, se ainda não couber tudo numa
+     linha só, os outros botões quebram pra uma 2ª linha em vez de sumir. */
+  .dialog-foot .btn.danger:first-child{margin-right:auto;}
 
   .checklist{display:flex;flex-direction:column;gap:8px;}
   .check-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--sunken);cursor:pointer;}
   .check-row.done{opacity:.55;text-decoration:line-through;}
   .check-row .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;}
   .check-row.done .box{background:var(--good);border-color:var(--good);color:#fff;}
+  /* linha da lista de compras: item clicável (marcar comprado) + campo de
+     estoque + status - variante do .check-row com mais de uma "zona" clicável */
+  .check-row-compra{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--sunken);}
+  .check-row-compra.done{opacity:.7;}
+  .check-row-compra .check-toggle{display:flex;align-items:center;gap:10px;flex:1 1 200px;min-width:0;cursor:pointer;}
+  .check-row-compra .check-toggle.disabled{cursor:default;}
+  .check-row-compra .check-toggle .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .check-row-compra.done .check-toggle .box{background:var(--good);border-color:var(--good);color:#fff;}
+  .check-row-compra.done .check-toggle b{text-decoration:line-through;}
+  .compra-estoque-field{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);flex:none;}
+  .compra-estoque-field input{width:56px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;background:var(--surface);color:var(--ink);}
+  .compra-status-badge{flex:none;margin-left:auto;}
+  /* fotos anexadas na OS/orçamento - grade de miniaturas com botão de
+     remover e um "quadradinho +" pra adicionar (some quando bate o limite) */
+  .fotos-grid{display:flex;flex-wrap:wrap;gap:10px;}
+  .foto-thumb-wrap{position:relative;width:84px;height:84px;flex:none;}
+  .foto-thumb{width:84px;height:84px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line);cursor:pointer;display:block;background:var(--sunken);}
+  .foto-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--bad);color:#fff;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);}
+  .foto-add-btn{width:84px;height:84px;flex:none;border:1.5px dashed var(--line);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--muted);cursor:pointer;background:var(--sunken);}
+  .foto-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .foto-viewer-dialog{max-width:92vw;max-height:92vh;padding:0;border:none;background:transparent;}
+  .foto-viewer-dialog::backdrop{background:rgba(10,12,8,.82);}
+  .foto-viewer-dialog img{max-width:92vw;max-height:88vh;display:block;margin:auto;border-radius:8px;}
 
   .status-row{display:flex;gap:6px;flex-wrap:wrap;}
   .status-btn{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:700;cursor:pointer;color:var(--ink-soft);}
@@ -324,6 +367,7 @@
           <button type="button" data-nav="fornecedores"><span class="ic">🏭</span> Fornecedores</button>
           <button type="button" data-nav="produtos"><span class="ic">📦</span> Produtos &amp; Serviços</button>
           <button type="button" data-nav="config"><span class="ic">⚙️</span> Empresa</button>
+          <button type="button" data-nav="lixeira"><span class="ic">🗑️</span> Lixeira</button>
           <button type="button" data-auth-logout><span class="ic">🚪</span> Sair</button>
         </div>
       </div>
@@ -342,6 +386,7 @@
       <button class="nav-item" data-nav="dashboard"><span class="ic">📊</span>Painel</button>
       <button class="nav-item" data-nav="orcamentos"><span class="ic">📝</span>Orçamentos</button>
       <button class="nav-item" data-nav="os"><span class="ic">🔧</span>Ordens de Serviço</button>
+      <button class="nav-item" data-nav="compras"><span class="ic">🛒</span>Lista de Compras</button>
       <button class="nav-item" data-nav="pagamentos"><span class="ic">💰</span>Recebimentos</button>
       <button class="nav-item" data-nav="nf"><span class="ic">🧾</span>Notas Fiscais</button>
       <div class="nav-sep"></div>
@@ -370,6 +415,7 @@
             <button type="button" data-nav="fornecedores"><span class="ic">🏭</span> Fornecedores</button>
             <button type="button" data-nav="produtos"><span class="ic">📦</span> Produtos &amp; Serviços</button>
             <button type="button" data-nav="config"><span class="ic">⚙️</span> Empresa</button>
+            <button type="button" data-nav="lixeira"><span class="ic">🗑️</span> Lixeira</button>
             <button type="button" data-auth-logout><span class="ic">🚪</span> Sair</button>
           </div>
         </div>
@@ -532,6 +578,7 @@
     <form class="form" id="form-pagamento">
       <input type="hidden" name="id">
       <div class="dialog-body">
+        <div id="pagamento-ultima-alteracao"></div>
         <div class="field"><label>Ordem de serviço</label><select name="osId" id="pag-os-select" required></select></div>
         <div id="pagamento-os-info" hidden></div>
         <div class="grid2">
@@ -539,12 +586,20 @@
           <div class="field"><label>Valor já pago (R$)</label><input name="valorPago" type="number" step="0.01" value="0"></div>
         </div>
         <div class="grid2">
-          <div class="field"><label>Forma de pagamento</label>
-            <select name="forma">
-              <option>Pix</option><option>Dinheiro</option><option>Boleto</option><option>Cartão</option><option>Transferência</option><option>A combinar</option>
-            </select>
-          </div>
+          <div class="field"><label>Data do pagamento</label><input name="dataPagamento" type="date"></div>
           <div class="field"><label>Vencimento</label><input name="vencimento" type="date"></div>
+        </div>
+        <div class="field"><label>Forma de pagamento</label>
+          <select name="forma" id="pag-forma-select">
+            <option>Pix</option><option>Dinheiro</option><option>Boleto</option><option>Cartão</option><option>Transferência</option><option>Entrada + parcelas</option><option>A combinar</option>
+          </select>
+        </div>
+        <div id="pagamento-entrada-parcelas" hidden>
+          <div class="grid2">
+            <div class="field"><label>Valor da entrada (R$)</label><input id="pagamento-entrada-valor" type="number" step="0.01" value="0"></div>
+            <div class="field"><label>Nº de parcelas (do saldo restante)</label><input id="pagamento-entrada-parcelas-num" type="number" min="1" value="2"></div>
+          </div>
+          <div class="hint" style="margin-top:-6px;">A entrada é registrada separada (com a data de vencimento acima), e o restante (Valor − entrada) é dividido em parcelas mensais iguais, uma por mês, a partir do mês seguinte.</div>
         </div>
         <div id="pagamento-parcelamento-novo">
           <div class="grid2">
@@ -560,6 +615,7 @@
       </div>
       <div class="dialog-foot">
         <button type="button" class="btn danger no-print" id="btn-del-pagamento" hidden>Excluir</button>
+        <button type="button" class="btn no-print" id="btn-recibo-pagamento" hidden>🧾 Gerar recibo</button>
         <button type="button" class="btn" data-close>Cancelar</button>
         <button type="submit" class="btn primary">Salvar</button>
       </div>
@@ -571,6 +627,7 @@
     <form class="form" id="form-nf">
       <input type="hidden" name="id">
       <div class="dialog-body">
+        <div id="nf-ultima-alteracao"></div>
         <div class="field"><label>Ordem de serviço</label><select name="osId" id="nf-os-select" required></select></div>
         <div class="grid2">
           <div class="field"><label>Número da NF</label><input name="numero"></div>
@@ -604,11 +661,17 @@
     <div class="dialog-foot"><button type="button" class="btn" data-close>Fechar</button></div>
   </dialog>
 
+  <dialog id="dlg-foto-viewer" class="foto-viewer-dialog">
+    <button type="button" class="dialog-close no-print" data-close style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.5);color:#fff;border-radius:50%;">×</button>
+    <img id="foto-viewer-img" src="" alt="Foto">
+  </dialog>
+
   <dialog id="dlg-fornecedor">
     <div class="dialog-head"><h3 id="dlg-fornecedor-title">Novo fornecedor</h3><button class="dialog-close" data-close>×</button></div>
     <form class="form" id="form-fornecedor">
       <input type="hidden" name="id">
       <div class="dialog-body">
+        <div id="fornecedor-ultima-alteracao"></div>
         <div class="field"><label>Nome / Razão social</label><input name="nome" class="uc" required></div>
         <div class="grid2">
           <div class="field"><label>Categoria</label>
@@ -642,6 +705,7 @@
     <form class="form" id="form-produto">
       <input type="hidden" name="id">
       <div class="dialog-body">
+        <div id="produto-ultima-alteracao"></div>
         <div class="grid2">
           <div class="field"><label>Tipo</label>
             <select name="tipo" id="produto-tipo-select">
@@ -676,6 +740,7 @@
     <form class="form" id="form-despesa">
       <input type="hidden" name="id">
       <div class="dialog-body">
+        <div id="despesa-ultima-alteracao"></div>
         <div class="field"><label>Descrição</label><input name="descricao" placeholder="Ex: Energia elétrica - agosto" required></div>
         <div class="grid2">
           <div class="field"><label>Categoria</label>
@@ -780,6 +845,7 @@
     <div class="hint" id="auth-subtitle" style="margin-bottom:16px;">Verificando sua sessão...</div>
     <div class="auth-error" id="auth-error" hidden></div>
     <form id="form-auth" hidden>
+      <div class="field" id="auth-nome-field" hidden><label>Seu nome</label><input type="text" name="nome" id="auth-nome" autocomplete="name" placeholder="Ex: Raissa"></div>
       <div class="field"><label>E-mail</label><input type="email" name="email" id="auth-email" required autocomplete="username"></div>
       <div class="field"><label>Senha</label><input type="password" name="senha" id="auth-senha" required minlength="6" autocomplete="current-password"></div>
       <div class="field" id="auth-confirmar-field" hidden><label>Confirmar senha</label><input type="password" name="confirmar" id="auth-confirmar" minlength="6" autocomplete="new-password"></div>
@@ -794,11 +860,34 @@
 <div id="print-doc"></div>
 
 <div id="data-stores" hidden>
-  <div id="store-config" class="store"><div class="rec" data-key="config" data-json='{"id": "config", "nome": "HidrauMiller", "responsavel": "Miller Piva", "telefone": "(38) 99849-7738", "email": "millerpiva@gmail.com", "cidade": "Unaí MG", "cnpj": "", "endereco": ""}'></div></div>
-  <div id="store-clientes" class="store"><div class="rec" data-key="cli_1" data-json='{"id": "cli_1", "nome": "MAIRON MANICA", "telefone": "", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_1", "nome": "ESCAVADEIRA VOLVO 140 PRIME", "numeroSerie": "", "obs": ""}]}'></div></div>
-  <div id="store-orcamentos" class="store"><div class="rec" data-key="orc_1" data-json='{"id": "orc_1", "numero": "ORC-2026-00193", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-08-27", "validade": 5, "semValidade": true, "formaPagamento": "A combinar", "itensServico": [{"desc": "BLOCO DIREITO P1 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "BLOCO ESQUERDO P2 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 570, "tipo": "produto"}, {"desc": "RETENTOR DA BOMBA K3V63", "qtd": 1, "valor": 180, "tipo": "produto"}, {"desc": "VÁLVULA SOLENÓIDE PROPORCIONAL", "qtd": 1, "valor": 1930, "tipo": "produto"}, {"desc": "SUPORTE DO PLATÔ", "qtd": 1, "valor": 1970, "tipo": "produto"}, {"desc": "LAPIDAR SUPORTE DO PLATÔ", "qtd": 1, "valor": 600, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P1", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P2", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO E PLACA DIREITA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO DO BLOCO E PLACA ESQUERDA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "DESMONTAR E MONTAR A BOMBA K3V63, TROCAR REPARO,REVISAR E RETIFICAR CONTROLADORAS, REVISAR BOMBA DE CARGA", "qtd": 1, "valor": 3000, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "rascunho", "historico": [{"ts": "2026-08-27T12:00:00.000Z", "texto": "Orçamento criado — total R$ 13.110,00 · 12 item(ns)"}]}'></div></div>
-  <div id="store-os" class="store"></div>
-  <div id="store-pagamentos" class="store"></div>
+  <div id="store-config" class="store"><div class="rec" data-key="config" data-json='{"id": "config", "nome": "HidrauMiller", "responsavel": "Miller Piva", "telefone": "(38) 99849-7738", "email": "millerpiva@gmail.com", "cidade": "Unaí MG", "cnpj": "", "endereco": "", "pixChave": "(38) 99999-1234", "pixBanco": "Banco do Brasil", "pixTitular": "Miller Piva Ltda"}'></div></div>
+  <div id="store-clientes" class="store"><div class="rec" data-key="cli_1" data-json='{"id": "cli_1", "nome": "MAIRON MANICA", "telefone": "(38) 99876-5432", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_1", "nome": "ESCAVADEIRA VOLVO 140 PRIME", "numeroSerie": "", "obs": ""}, {"id": "maq_2", "nome": "RETROESCAVADEIRA CASE 580", "numeroSerie": "", "obs": ""}, {"id": "maq_3", "nome": "MINICARREGADEIRA BOBCAT S70", "numeroSerie": "", "obs": ""}]}'></div>
+    <div class="rec" data-key="cli_2" data-json='{"id": "cli_2", "nome": "FAZENDA SÃO JOSÉ", "telefone": "(38) 99711-2233", "propriedade": "Sítio São José", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_4", "nome": "TRATOR NEW HOLLAND T7.245", "numeroSerie": "", "obs": ""}]}'></div>
+    <div class="rec" data-key="cli_3" data-json='{"id": "cli_3", "nome": "TERRAPLANAGEM SANTOS LTDA", "telefone": "(38) 99622-4488", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_5", "nome": "MOTONIVELADORA CATERPILLAR 120K", "numeroSerie": "", "obs": ""}]}'></div>
+  </div>
+  <div id="store-orcamentos" class="store"><div class="rec" data-key="orc_1" data-json='{"id": "orc_1", "numero": "ORC-2026-00193", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-08-27", "validade": 5, "semValidade": true, "formaPagamento": "A combinar", "itensServico": [{"desc": "BLOCO DIREITO P1 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "BLOCO ESQUERDO P2 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 570, "tipo": "produto"}, {"desc": "RETENTOR DA BOMBA K3V63", "qtd": 1, "valor": 180, "tipo": "produto"}, {"desc": "VÁLVULA SOLENÓIDE PROPORCIONAL", "qtd": 1, "valor": 1930, "tipo": "produto"}, {"desc": "SUPORTE DO PLATÔ", "qtd": 1, "valor": 1970, "tipo": "produto"}, {"desc": "LAPIDAR SUPORTE DO PLATÔ", "qtd": 1, "valor": 600, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P1", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P2", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO E PLACA DIREITA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO DO BLOCO E PLACA ESQUERDA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "DESMONTAR E MONTAR A BOMBA K3V63, TROCAR REPARO,REVISAR E RETIFICAR CONTROLADORAS, REVISAR BOMBA DE CARGA", "qtd": 1, "valor": 3000, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "rascunho", "historico": [{"ts": "2026-08-27T12:00:00.000Z", "texto": "Orçamento criado — total R$ 13.110,00 · 12 item(ns)"}]}'></div>
+    <div class="rec" data-key="orc_2" data-json='{"id": "orc_2", "numero": "ORC-2026-00001", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "MANUTENÇÃO EM PISTÃO", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-05-10", "validade": 5, "semValidade": true, "formaPagamento": "Parcelado em 3x (Pix)", "parcelas": 3, "itensServico": [{"desc": "DESMONTAR E MONTAR BOMBA K3V63, TROCAR REPARO", "qtd": 1, "valor": 5530, "tipo": "servico"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 2000, "tipo": "produto"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-05-10T12:00:00.000Z", "texto": "Orçamento criado — total R$ 7.530,00 · 2 item(ns)"}]}'></div>
+    <div class="rec" data-key="orc_3" data-json='{"id": "orc_3", "numero": "ORC-2026-00004", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "RETROESCAVADEIRA CASE 580", "maquinaId": "maq_2", "data": "2026-07-05", "validade": 5, "semValidade": true, "formaPagamento": "Boleto a prazo", "prazoDias": 30, "itensServico": [{"desc": "REVISÃO GERAL RETROESCAVADEIRA CASE 580", "qtd": 1, "valor": 12460, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-07-05T12:00:00.000Z", "texto": "Orçamento criado — total R$ 12.460,00 · 1 item(ns)"}]}'></div>
+    <div class="rec" data-key="orc_4" data-json='{"id": "orc_4", "numero": "ORC-2026-00006", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "MINICARREGADEIRA BOBCAT S70", "maquinaId": "maq_3", "data": "2026-07-28", "validade": 5, "semValidade": true, "formaPagamento": "Pix parcelado em 2x", "parcelas": 2, "itensServico": [{"desc": "TROCA DE MANGUEIRAS HIDRÁULICAS", "qtd": 1, "valor": 1290, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-07-28T12:00:00.000Z", "texto": "Orçamento criado — total R$ 1.290,00 · 1 item(ns)"}]}'></div>
+    <div class="rec" data-key="orc_5" data-json='{"id": "orc_5", "numero": "ORC-2026-00002", "clienteId": "cli_2", "clienteNome": "FAZENDA SÃO JOSÉ", "maquina": "TRATOR NEW HOLLAND T7.245", "maquinaId": "maq_4", "data": "2026-08-30", "validade": 7, "semValidade": false, "formaPagamento": "Entrada + saldo (Pix)", "itensServico": [{"desc": "TROCA DE CILINDRO HIDRÁULICO DE DIREÇÃO", "qtd": 1, "valor": 1800, "tipo": "produto"}, {"desc": "KIT VEDAÇÃO CILINDRO", "qtd": 1, "valor": 320, "tipo": "produto"}, {"desc": "MÃO DE OBRA - INSTALAÇÃO", "qtd": 1, "valor": 450, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "aprovado", "historico": [{"ts": "2026-08-30T12:00:00.000Z", "texto": "Orçamento criado — total R$ 2.570,00 · 3 item(ns)"}, {"ts": "2026-08-31T09:00:00.000Z", "texto": "Orçamento aprovado pelo cliente"}]}'></div>
+    <div class="rec" data-key="orc_6" data-json='{"id": "orc_6", "numero": "ORC-2026-00003", "clienteId": "cli_3", "clienteNome": "TERRAPLANAGEM SANTOS LTDA", "maquina": "MOTONIVELADORA CATERPILLAR 120K", "maquinaId": "maq_5", "data": "2026-08-18", "validade": 5, "semValidade": false, "formaPagamento": "A combinar", "itensServico": [{"desc": "REPARO BOMBA HIDRÁULICA PRINCIPAL", "qtd": 1, "valor": 4200, "tipo": "servico"}, {"desc": "FILTRO HIDRÁULICO", "qtd": 2, "valor": 380, "tipo": "produto"}, {"desc": "ÓLEO HIDRÁULICO ISO 68 (20L)", "qtd": 1, "valor": 540, "tipo": "produto"}], "listaCompras": [], "obs": "Cliente optou por fazer com outra oficina", "desconto": 0, "status": "reprovado", "historico": [{"ts": "2026-08-18T12:00:00.000Z", "texto": "Orçamento criado — total R$ 5.500,00 · 3 item(ns)"}, {"ts": "2026-08-20T15:00:00.000Z", "texto": "Orçamento enviado ao cliente"}, {"ts": "2026-08-24T10:00:00.000Z", "texto": "Orçamento reprovado"}]}'></div>
+  </div>
+  <div id="store-os" class="store">
+    <div class="rec" data-key="os_2" data-json='{"id": "os_2", "numero": "OS-2026-0002", "orcamentoOrigemId": "orc_2", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "MANUTENÇÃO EM PISTÃO", "solicitante": "", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "itens": [{"desc": "DESMONTAR E MONTAR BOMBA K3V63, TROCAR REPARO", "qtd": 1, "valor": 5530, "tipo": "servico"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 2000, "tipo": "produto"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-05-15", "dataConclusao": "", "listaCompras": [], "valorTotal": 7530, "formaPagamento": "Parcelado em 3x (Pix)", "parcelas": 3, "prazoDias": null, "fotos": []}'></div>
+    <div class="rec" data-key="os_3" data-json='{"id": "os_3", "numero": "OS-2026-0005", "orcamentoOrigemId": "orc_3", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "", "solicitante": "", "maquina": "RETROESCAVADEIRA CASE 580", "maquinaId": "maq_2", "itens": [{"desc": "REVISÃO GERAL RETROESCAVADEIRA CASE 580", "qtd": 1, "valor": 12460, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "concluida", "dataAbertura": "2026-07-10", "dataConclusao": "2026-07-25", "listaCompras": [], "valorTotal": 12460, "formaPagamento": "Boleto a prazo", "parcelas": null, "prazoDias": 30, "fotos": []}'></div>
+    <div class="rec" data-key="os_4" data-json='{"id": "os_4", "numero": "OS-2026-0007", "orcamentoOrigemId": "orc_4", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "titulo": "", "solicitante": "", "maquina": "MINICARREGADEIRA BOBCAT S70", "maquinaId": "maq_3", "itens": [{"desc": "TROCA DE MANGUEIRAS HIDRÁULICAS", "qtd": 1, "valor": 1290, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-08-01", "dataConclusao": "", "listaCompras": [], "valorTotal": 1290, "formaPagamento": "Pix parcelado em 2x", "parcelas": 2, "prazoDias": null, "fotos": []}'></div>
+    <div class="rec" data-key="os_5" data-json='{"id": "os_5", "numero": "OS-2026-0003", "orcamentoOrigemId": "orc_5", "clienteId": "cli_2", "clienteNome": "FAZENDA SÃO JOSÉ", "titulo": "", "solicitante": "", "maquina": "TRATOR NEW HOLLAND T7.245", "maquinaId": "maq_4", "itens": [{"desc": "TROCA DE CILINDRO HIDRÁULICO DE DIREÇÃO", "qtd": 1, "valor": 1800, "tipo": "servico"}, {"desc": "KIT VEDAÇÃO CILINDRO", "qtd": 1, "valor": 320, "tipo": "produto"}, {"desc": "MÃO DE OBRA - INSTALAÇÃO", "qtd": 1, "valor": 450, "tipo": "servico"}], "desconto": 0, "descricao": "", "status": "em_andamento", "dataAbertura": "2026-08-31", "dataConclusao": "", "listaCompras": [], "valorTotal": 2570, "formaPagamento": "Entrada + saldo (Pix)", "parcelas": null, "prazoDias": null, "fotos": []}'></div>
+  </div>
+  <div id="store-pagamentos" class="store">
+    <div class="rec" data-key="pag_1" data-json='{"id": "pag_1", "osId": "os_2", "valor": 2500, "valorPago": 2500, "forma": "Pix", "vencimento": "2026-06-15", "dataPagamento": "2026-06-10", "status": "pago", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 1, "obs": ""}'></div>
+    <div class="rec" data-key="pag_2" data-json='{"id": "pag_2", "osId": "os_2", "valor": 2500, "valorPago": 0, "forma": "Pix", "vencimento": "2026-07-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 2, "obs": ""}'></div>
+    <div class="rec" data-key="pag_3" data-json='{"id": "pag_3", "osId": "os_2", "valor": 2530, "valorPago": 0, "forma": "Pix", "vencimento": "2026-10-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 3, "parcelaAtual": 3, "obs": ""}'></div>
+    <div class="rec" data-key="pag_4" data-json='{"id": "pag_4", "osId": "os_3", "valor": 12460, "valorPago": 0, "forma": "Boleto", "vencimento": "2026-08-10", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 1, "parcelaAtual": 1, "obs": ""}'></div>
+    <div class="rec" data-key="pag_5" data-json='{"id": "pag_5", "osId": "os_4", "valor": 890, "valorPago": 300, "forma": "Pix", "vencimento": "2026-08-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 2, "parcelaAtual": 1, "obs": ""}'></div>
+    <div class="rec" data-key="pag_6" data-json='{"id": "pag_6", "osId": "os_4", "valor": 400, "valorPago": 0, "forma": "Pix", "vencimento": "2026-10-01", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "parcelaTotal": 2, "parcelaAtual": 2, "obs": ""}'></div>
+    <div class="rec" data-key="pag_7" data-json='{"id": "pag_7", "osId": "os_5", "valor": 770, "valorPago": 770, "forma": "Pix", "vencimento": "2026-08-30", "dataPagamento": "2026-08-31", "status": "pago", "ehEntrada": true, "parcelaTotal": 2, "parcelaAtual": 1, "obs": ""}'></div>
+    <div class="rec" data-key="pag_8" data-json='{"id": "pag_8", "osId": "os_5", "valor": 1800, "valorPago": 0, "forma": "Pix", "vencimento": "2026-08-15", "dataPagamento": "", "status": "em_aberto", "ehEntrada": false, "obs": ""}'></div>
+  </div>
   <div id="store-nf" class="store"></div>
   <div id="store-fornecedores" class="store"></div>
   <div id="store-despesas" class="store"></div>
@@ -1234,20 +1323,27 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       try{ return JSON.parse(c.dataset.json); }catch(e){ return null; }
     }).filter(Boolean);
   }
+  // Tipos que passam pela Lixeira (soft-delete) - "os" fica de fora porque
+  // OS nunca é excluída de verdade, só cancelada (status), e "config" é o
+  // cadastro único da empresa.
+  var LIXEIRA_TIPOS = ['clientes','orcamentos','pagamentos','nf','fornecedores','despesas','produtos'];
+  function loadListActive(name){
+    return loadList(name).filter(function(r){ return !r.deletedEm; });
+  }
   function loadDBFromStores(){
     DB.config = loadList('config')[0] || defaultConfig();
     if(!DB.config.categoriasCustom) DB.config.categoriasCustom = [];
     if(DB.config.markupPadrao==null) DB.config.markupPadrao = 40;
-    DB.clientes = loadList('clientes');
-    DB.orcamentos = loadList('orcamentos');
+    DB.clientes = loadListActive('clientes');
+    DB.orcamentos = loadListActive('orcamentos');
     DB.os = loadList('os');
     // migração: o status "aberta" foi removido (unificado com "Em andamento") - OS antigas salvas com esse status ainda precisam de um rótulo válido
     DB.os.forEach(function(o){ if(o.status==='aberta'){ o.status='em_andamento'; upsert('os', o); } });
-    DB.pagamentos = loadList('pagamentos');
-    DB.nf = loadList('nf');
-    DB.fornecedores = loadList('fornecedores');
-    DB.despesas = loadList('despesas');
-    DB.produtos = loadList('produtos');
+    DB.pagamentos = loadListActive('pagamentos');
+    DB.nf = loadListActive('nf');
+    DB.fornecedores = loadListActive('fornecedores');
+    DB.despesas = loadListActive('despesas');
+    DB.produtos = loadListActive('produtos');
   }
   /* ---------------- persistência local (localStorage) ----------------
      Sem isto, os dados só existiam no DOM da página: fechar a aba ou dar
@@ -1281,6 +1377,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var store=storeEl(name);
     var el=store.querySelector('.rec[data-key="'+obj.id+'"]');
     if(!el){ el=document.createElement('div'); el.className='rec'; el.dataset.key=obj.id; store.appendChild(el); }
+    // Registro simples de auditoria: quem alterou por último e quando,
+    // preenchido sozinho a cada salvamento (não precisa mexer em cada tela
+    // pra registrar isso). "config" fica de fora - é o cadastro da própria
+    // empresa, não um registro do negócio. Só sobrescreve o "quem" quando dá
+    // pra saber (logado no app nativo) - no link web, sem login, mantém o
+    // último "quem" conhecido em vez de apagar a informação.
+    if(name!=='config'){
+      var nomeAtual = currentUserDisplayName();
+      if(nomeAtual) obj.ultimaAlteracaoPor = nomeAtual;
+      obj.ultimaAlteracaoEm = new Date().toISOString();
+    }
     el.dataset.json = JSON.stringify(obj);
     persistStore(name);
     cloudSyncWrite(name, obj);
@@ -1291,6 +1398,40 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(el) el.remove();
     persistStore(name);
     cloudSyncDelete(name, id);
+  }
+  // Fotos anexadas em Orçamento/OS: limite por registro combinado com a
+  // Raissa pra não estourar o espaço (localStorage/nuvem tem um teto único
+  // compartilhado com todos os dados do app) - as fotos são comprimidas
+  // antes de salvar (comprimirImagem) e cada registro guarda no máximo
+  // FOTOS_MAX fotos.
+  var FOTOS_MAX = 6;
+  var LIXEIRA_DIAS = 30;
+  // "Excluir" não apaga de verdade - só marca com deletedEm e o registro some
+  // das telas normais (loadDBFromStores filtra), mas continua recuperável na
+  // Lixeira por 30 dias. Reaproveita o "quem/quando" da auditoria (upsert já
+  // grava ultimaAlteracaoPor/Em a cada chamada) pra saber quem excluiu.
+  function softDelete(name, id){
+    var raw = loadList(name).find(function(r){ return r.id===id; });
+    if(!raw) return;
+    raw.deletedEm = new Date().toISOString();
+    upsert(name, raw);
+  }
+  function restoreRec(name, id){
+    var raw = loadList(name).find(function(r){ return r.id===id; });
+    if(!raw) return;
+    delete raw.deletedEm;
+    upsert(name, raw);
+  }
+  // Roda na abertura do app: qualquer item na lixeira há mais de 30 dias é
+  // apagado de vez (aí sim, sem volta).
+  function purgeLixeiraExpirada(){
+    LIXEIRA_TIPOS.forEach(function(name){
+      loadList(name).forEach(function(r){
+        if(!r.deletedEm) return;
+        var dias = (Date.now() - new Date(r.deletedEm).getTime())/86400000;
+        if(dias >= LIXEIRA_DIAS) removeRec(name, r.id);
+      });
+    });
   }
 
   function findCliente(id){ return DB.clientes.find(function(c){return c.id===id;}); }
@@ -1478,6 +1619,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(paid>0 && paid<total) return 'parcial';
     return 'aberto';
   }
+  function pagamentoParcelaLabel(p){
+    if(p.ehEntrada) return 'Entrada';
+    if(p.parcelaTotal>1) return 'Parcela '+p.parcelaAtual+'/'+p.parcelaTotal;
+    return 'Pagamento';
+  }
   var PAG_STATUS_FILTROS = { pago:{label:"Pago"}, atrasado:{label:"Atrasado"}, parcial:{label:"Parcial"}, aberto:{label:"Em aberto"} };
   var NF_STATUS = { pendente:{label:"Pendente",cls:"warn"}, emitida:{label:"Emitida",cls:"good"} };
   var DESPESA_CATEGORIAS = {
@@ -1509,6 +1655,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var d = new Date(iso+'T00:00:00');
     return Math.round((d-hoje)/86400000);
   }
+  // Data (ISO) em que a validade de um orçamento vence = data do orçamento +
+  // "validade" dias. null quando não tem data, não tem validade definida
+  // (dias=0) ou o cliente marcou "sem validade definida".
+  function orcamentoValidadeISO(o){
+    if(!o.data || o.semValidade || !o.validade) return null;
+    var d = new Date(o.data+'T00:00:00');
+    d.setDate(d.getDate() + (Number(o.validade)||0));
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
   function computeAlertas(){
     var limite = new Date(); limite.setDate(limite.getDate()+7);
     var limiteISO = limite.toISOString().slice(0,10);
@@ -1519,6 +1674,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
     DB.despesas.filter(function(d){return d.status!=='pago' && d.vencimento && d.vencimento<=limiteISO;}).forEach(function(d){
       itens.push({ id:d.id, tipo:'pagar', desc:d.descricao, valor:Number(d.valor)||0, vencimento:d.vencimento });
+    });
+    // Orçamento ainda sem resposta (rascunho/enviado, nem aprovado nem
+    // recusado) com a validade vencendo nos próximos 7 dias ou já vencida -
+    // sinal de que talvez valha a pena dar um retorno pro cliente.
+    DB.orcamentos.filter(function(o){ return o.status==='rascunho' || o.status==='enviado'; }).forEach(function(o){
+      var venc = orcamentoValidadeISO(o);
+      if(venc && venc<=limiteISO){
+        itens.push({ id:o.id, tipo:'orcamento', desc:(o.clienteNome||'')+' · '+o.numero, valor: itemsTotal(o.itensServico)-(Number(o.desconto)||0), vencimento:venc });
+      }
     });
     itens.sort(function(a,b){return (a.vencimento||"").localeCompare(b.vencimento||"");});
     return itens;
@@ -1545,17 +1709,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     clientes:{title:"Clientes", sub:"Cadastro de clientes e propriedades", action:"cliente"},
     orcamentos:{title:"Orçamentos", sub:"Propostas para os clientes", action:"orcamento"},
     os:{title:"Ordens de Serviço", sub:"Serviços em andamento e concluídos", action:null},
+    compras:{title:"Lista de Compras", sub:"O que falta comprar, agrupado por Ordem de Serviço", action:null},
     pagamentos:{title:"Recebimentos", sub:"Controle de valores a receber de clientes", action:"pagamento"},
     nf:{title:"Notas Fiscais", sub:"Controle de emissão de NF por OS", action:"nf"},
     financeiro:{title:"Financeiro", sub:"Faturamento, lucro, margem e indicadores do negócio", action:null},
     despesas:{title:"Despesas", sub:"Fornecedores, energia, aluguel, combustível e outras contas", action:"despesa"},
     fornecedores:{title:"Fornecedores", sub:"Cadastro de fornecedores e parceiros", action:"fornecedor"},
     produtos:{title:"Produtos & Serviços", sub:"Catálogo, custo de referência e markup", action:"produto"},
-    config:{title:"Empresa", sub:"Dados usados nos PDFs", action:null}
+    config:{title:"Empresa", sub:"Dados usados nos PDFs", action:null},
+    lixeira:{title:"Lixeira", sub:"Itens excluídos - disponíveis para restaurar por "+LIXEIRA_DIAS+" dias", action:null}
   };
 
   function go(view){
     VIEW = view;
+    atualizarPlaceholderBusca();
     document.querySelectorAll('.nav-item[data-nav]').forEach(function(b){ b.classList.toggle('active', b.dataset.nav===view); });
     var meta = VIEWS[view];
     document.getElementById('view-title').textContent = meta.title;
@@ -1665,6 +1832,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else if(VIEW==='clientes') root.innerHTML = renderClientes();
     else if(VIEW==='orcamentos') root.innerHTML = renderOrcamentos();
     else if(VIEW==='os') root.innerHTML = renderOSList();
+    else if(VIEW==='compras') root.innerHTML = renderListaComprasGeral();
     else if(VIEW==='pagamentos') root.innerHTML = renderPagamentos();
     else if(VIEW==='nf') root.innerHTML = renderNF();
     else if(VIEW==='financeiro') root.innerHTML = renderFinanceiro();
@@ -1672,6 +1840,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else if(VIEW==='fornecedores') root.innerHTML = renderFornecedores();
     else if(VIEW==='produtos') root.innerHTML = renderProdutos();
     else if(VIEW==='config') root.innerHTML = renderConfig();
+    else if(VIEW==='lixeira') root.innerHTML = renderLixeira();
     bindViewEvents();
   }
 
@@ -1686,16 +1855,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var atrasados = DB.pagamentos.filter(function(p){ return pagStatusOf(p).label==='Atrasado'; }).length;
 
     var html = '<div class="kpi-grid">'+
-      kpi("OS em aberto", osAbertasList.length, "accent", osAbertasList.length? money(valorOsAbertas) : null)+
-      kpi("Orçamentos pendentes", orcPendentesList.length, "", orcPendentesList.length? money(valorOrcPendentes) : null)+
-      kpi("A receber", money(aReceber), "accent", titulosAbertos.length+" título(s) em aberto")+
-      kpi("Recebimentos atrasados", atrasados, atrasados>0?"bad":"")+
+      kpi("OS em aberto", osAbertasList.length, "accent", osAbertasList.length? money(valorOsAbertas) : null, {view:'os', filterVar:'OS_FILTRO', filterValue:'abertas'})+
+      kpi("Orçamentos pendentes", orcPendentesList.length, "", orcPendentesList.length? money(valorOrcPendentes) : null, {view:'orcamentos', filterVar:'ORC_FILTRO', filterValue:'pendentes'})+
+      kpi("A receber", money(aReceber), "accent", titulosAbertos.length+" título(s) em aberto", {view:'pagamentos', filterVar:'PAG_FILTRO', filterValue:'pendentes'})+
+      kpi("Recebimentos atrasados", atrasados, atrasados>0?"bad":"", null, {view:'pagamentos', filterVar:'PAG_FILTRO', filterValue:'atrasado'})+
       '</div>';
     html += '<p class="hint" style="margin:-6px 0 16px;">"OS em aberto" conta as ordens de serviço ainda em andamento (não concluídas). "A receber" é o valor financeiro que os clientes ainda devem, vindo dos recebimentos pendentes — os dois números são independentes.</p>';
 
     var alertas = computeAlertas();
     var alertasReceber = alertas.filter(function(a){ return a.tipo==='receber'; });
     var alertasPagar = alertas.filter(function(a){ return a.tipo==='pagar'; });
+    var alertasOrcamento = alertas.filter(function(a){ return a.tipo==='orcamento'; });
+
+    html += '<div class="panel"><div class="panel-head"><h2>🟡 Orçamentos vencendo sem resposta</h2></div><div class="panel-body">';
+    if(!alertasOrcamento.length) html += emptyState("✅","Nenhum orçamento vencendo","Orçamentos em rascunho/enviados aparecem aqui quando a validade estiver perto de vencer (ou já vencida) e o cliente ainda não respondeu.");
+    else { html += '<table class="simple row-click"><tr><th>Cliente / Nº</th><th>Validade</th><th>Valor</th><th></th></tr>'+
+      alertasOrcamento.map(function(a){
+        return '<tr data-open-orc="'+esc(a.id)+'" title="Abrir orçamento"><td>'+esc(a.desc)+'</td><td class="num">'+dateBR(a.vencimento)+'</td><td class="num">'+money(a.valor)+'</td><td>'+pill(alertaPill(a.vencimento))+'</td></tr>';
+      }).join('')+
+      '</table>'; }
+    html += '</div></div>';
 
     html += '<div class="panel"><div class="panel-head"><h2>🟢 A receber (próx. 7 dias e atrasados)</h2></div><div class="panel-body">';
     if(!alertasReceber.length) html += emptyState("✅","Nada a receber vencendo","Nenhum recebimento pendente nos próximos 7 dias.");
@@ -1725,14 +1904,28 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
     return html;
   }
-  function kpi(label,val,accentClass,sub){ return '<div class="kpi"><div class="label">'+esc(label)+'</div><div class="value '+(accentClass||'')+'">'+val+'</div>'+(sub?'<div class="kpi-sub">'+sub+'</div>':'')+'</div>'; }
+  function kpi(label,val,accentClass,sub,nav){
+    // "nav" (opcional) faz o card ser clicável e levar direto pra lista já
+    // filtrada certa (ex.: "OS em aberto" -> tela de OS com o filtro
+    // "abertas" já aplicado), em vez da pessoa ter que ir procurar na aba
+    // e escolher o filtro manualmente.
+    var navAttr = nav ? ' data-kpi-nav=\''+JSON.stringify(nav).replace(/'/g,"&#39;")+'\'' : '';
+    var cls = 'kpi'+(nav?' kpi-clickable':'');
+    return '<div class="'+cls+'"'+navAttr+'><div class="label">'+esc(label)+'</div><div class="value '+(accentClass||'')+'">'+val+'</div>'+(sub?'<div class="kpi-sub">'+sub+'</div>':'')+'</div>';
+  }
   function emptyState(ic,title,sub){ return '<div class="empty"><div class="ic">'+ic+'</div><div style="font-weight:700;">'+esc(title)+'</div><p>'+esc(sub)+'</p></div>'; }
 
   /* ---------------- CLIENTES ---------------- */
   function renderClientes(){
     if(!DB.clientes.length) return emptyState("👤","Nenhum cliente cadastrado","Clique em + Novo para cadastrar o primeiro cliente.");
     var list = DB.clientes.slice().sort(function(a,b){return a.nome.localeCompare(b.nome);});
-    return '<div class="rec-list">'+list.map(function(c){
+    if(ITEM_FILTROS.cliente){
+      var clientePicked = list.find(function(x){return x.id===ITEM_FILTROS.cliente;});
+      list = clientePicked ? [clientePicked] : [];
+    }
+    var filtroTags = activeFiltrosTagsHtml('cliente');
+    if(!list.length) return filtroTags+emptyState("👤","Nenhum cliente encontrado","Limpe o filtro pra ver todos os clientes.");
+    return filtroTags+'<div class="rec-list">'+list.map(function(c){
       var nOrc = DB.orcamentos.filter(function(o){return o.clienteId===c.id;}).length;
       var clienteOS = DB.os.filter(function(o){return o.clienteId===c.id;}).sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");});
       var nOS = clienteOS.length, ultimo = clienteOS[0];
@@ -1777,9 +1970,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     form.solicitaNF.value = c.solicitaNF || "as_vezes";
     document.getElementById('btn-del-cliente').hidden = !id;
     document.getElementById('btn-del-cliente').onclick = function(){
-      customConfirm('Excluir este cliente?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este cliente? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('clientes', id); loadDBFromStores(); dlg.close(); render(); toast('Cliente excluído');
+        softDelete('clientes', id); loadDBFromStores(); dlg.close(); render(); toast('Cliente movido para a lixeira');
       });
     };
     var importHint = document.getElementById('cliente-importar-hint');
@@ -1930,6 +2123,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       .slice().sort(function(a,b){return (b.data||"").localeCompare(a.data||"");});
     var abertas = clienteOS.filter(function(o){return o.status!=='concluida' && o.status!=='cancelada';}).length;
     var ultimo = clienteOS.slice().sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");})[0];
+    // Soma tudo que o cliente ainda deve, somando as OS todas dele (nao só a
+    // que estiver aberta na hora) - é o que ele pergunta quando quer saber
+    // "quanto esse cliente me deve no total".
+    var clienteOSIds = clienteOS.map(function(o){return o.id;});
+    var clientePagamentos = DB.pagamentos.filter(function(p){return clienteOSIds.indexOf(p.osId)>=0;});
+    var clienteAbertosList = clientePagamentos.filter(function(p){return p.status!=='pago';});
+    var clienteTotalAberto = clienteAbertosList.reduce(function(s,p){return s+Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0));},0);
+    var clienteAtrasados = clientePagamentos.filter(function(p){return pagStatusOf(p).label==='Atrasado';}).length;
     var filtroNome = CURRENT_MAQUINA_FILTER ? esc((maquinas.find(function(m){return m.id===CURRENT_MAQUINA_FILTER;})||{}).nome||'') : '';
 
     var solicitaNFLabel = {sim:"Sim, sempre", as_vezes:"Às vezes", nao:"Não solicita"}[c.solicitaNF||"as_vezes"];
@@ -1943,6 +2144,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     html += '<div class="kpi-grid" style="margin-bottom:18px;">'+
       kpi("Máquinas", maquinas.length, "")+
       kpi("OS em aberto", abertas, abertas>0?"accent":"")+
+      kpi("Total em aberto", money(clienteTotalAberto), clienteTotalAberto>0?"bad":"", clienteAtrasados>0? clienteAtrasados+" atrasado(s)" : (clienteAbertosList.length? clienteAbertosList.length+" título(s) em aberto" : null))+
       kpi("Último serviço", ultimo? dateBR(ultimo.dataAbertura) : "—", "")+
       '</div>';
 
@@ -1983,6 +2185,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       historyOS.map(function(o){ return '<tr><td class="num">'+esc(o.numero)+'</td><td>'+esc(o.maquina||"—")+'</td><td class="num">'+dateBR(o.dataAbertura)+'</td><td>'+pill(OS_STATUS[o.status])+'</td><td class="num">'+money(o.valorTotal)+'</td></tr>'; }).join('')+
       '</table>';
 
+    html += ultimaAlteracaoHtml(c);
     html += '<div class="actions-row" style="margin-top:16px;"><button type="button" class="btn sm primary" data-edit-cliente="'+c.id+'">Editar dados do cliente</button></div>';
     document.getElementById('cliente-detail-body').innerHTML = html;
   }
@@ -2031,15 +2234,105 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     toast('Máquina salva');
   });
 
+  /* ---------------- filtros ativos por módulo (cliente / item específico /
+     OS) — todos vêm da MESMA busca única do topo: digitar e selecionar um
+     cliente ou um registro vira uma "tag" removível aqui embaixo, e dá pra
+     ir empilhando mais de um critério (ex: cliente + número do orçamento)
+     sem precisar de uma caixa de busca separada por módulo. ---------------- */
+  var CLIENTE_FILTROS = { orc:'', os:'', pag:'', nf:'' };
+  var ITEM_FILTROS = { orc:'', os:'', cliente:'' };
+  var OS_FILTROS = { pag:'', nf:'' };
+  var CLIENTE_FILTRO_FONTES = {
+    orc: function(){ var ids={}; DB.orcamentos.forEach(function(o){ if(o.clienteId) ids[o.clienteId]=true; }); return ids; },
+    os: function(){ var ids={}; DB.os.forEach(function(o){ if(o.clienteId) ids[o.clienteId]=true; }); return ids; },
+    pag: function(){ var ids={}; DB.pagamentos.forEach(function(p){ var o=findOS(p.osId); if(o) ids[o.clienteId]=true; }); return ids; },
+    nf: function(){ var ids={}; DB.nf.forEach(function(n){ var o=findOS(n.osId); if(o) ids[o.clienteId]=true; }); return ids; }
+  };
+  function clientesParaFiltro(prefix){
+    var fonte = CLIENTE_FILTRO_FONTES[prefix];
+    if(!fonte) return [];
+    return Object.keys(fonte()).map(findCliente).filter(Boolean)
+      .sort(function(a,b){ return (a.nome||'').localeCompare(b.nome||''); });
+  }
+  function filtroTag(icone, label, clearAttr, clearVal){
+    return '<span class="filtro-tag">'+icone+' '+esc(label)+
+      '<button type="button" data-'+clearAttr+'="'+clearVal+'" title="Remover">✕</button></span>';
+  }
+  // Monta a fileira de tags ativas pro módulo (prefix: orc/os/pag/nf/cliente).
+  function activeFiltrosTagsHtml(prefix){
+    var tags = [];
+    if(CLIENTE_FILTROS[prefix]){
+      var c = findCliente(CLIENTE_FILTROS[prefix]);
+      if(c) tags.push(filtroTag('👤', c.nome, 'cliente-filtro-clear', prefix));
+    }
+    if(prefix==='orc' && ITEM_FILTROS.orc){
+      var o = DB.orcamentos.find(function(x){return x.id===ITEM_FILTROS.orc;});
+      if(o) tags.push(filtroTag('📝', o.numero, 'item-filtro-clear', 'orc'));
+    }
+    if(prefix==='os' && ITEM_FILTROS.os){
+      var os1 = DB.os.find(function(x){return x.id===ITEM_FILTROS.os;});
+      if(os1) tags.push(filtroTag('🔧', os1.numero, 'item-filtro-clear', 'os'));
+    }
+    if(prefix==='cliente' && ITEM_FILTROS.cliente){
+      var cl = DB.clientes.find(function(x){return x.id===ITEM_FILTROS.cliente;});
+      if(cl) tags.push(filtroTag('👤', cl.nome, 'item-filtro-clear', 'cliente'));
+    }
+    if((prefix==='pag'||prefix==='nf') && OS_FILTROS[prefix]){
+      var os2 = findOS(OS_FILTROS[prefix]);
+      if(os2) tags.push(filtroTag('🔧', os2.numero, 'os-filtro-clear', prefix));
+    }
+    if(!tags.length) return '';
+    return '<div class="filtro-tags">'+tags.join('')+'</div>';
+  }
+  // concordância de número dos adjetivos de status usados no resumo (as
+  // frases invariáveis, tipo "em andamento", nem entram aqui)
+  var STATUS_LABEL_PLURAL = {
+    'aprovado':'aprovados', 'reprovado':'reprovados', 'enviado':'enviados',
+    'atrasado':'atrasados', 'pago':'pagos', 'parcial':'parciais',
+    'concluída':'concluídas', 'cancelada':'canceladas',
+    'pendente':'pendentes', 'emitida':'emitidas'
+  };
+  // texto do status atualmente selecionado nos chips (em minúsculas, já
+  // concordando em número com "count"), ou '' quando o filtro é
+  // "Todas"/sem qualificador
+  function statusFiltroLabel(filtroValue, statusMap, extras, count){
+    var base;
+    if(filtroValue==='todas') return '';
+    if(extras && extras[filtroValue]!==undefined) base = extras[filtroValue];
+    else if(statusMap[filtroValue]) base = statusMap[filtroValue].label.toLowerCase();
+    else return '';
+    if(count===1) return base;
+    return STATUS_LABEL_PLURAL[base] || base;
+  }
+  // resumo "N item(ns) [status] para <Cliente>" mostrado quando a busca de
+  // cliente está filtrando a lista — atualiza sozinho pra qualquer chip de
+  // status combinado com o filtro de cliente
+  function clienteFiltroResumoHtml(prefix, count, statusLabel, itemSing, itemPlural){
+    if(!CLIENTE_FILTROS[prefix]) return '';
+    var c = findCliente(CLIENTE_FILTROS[prefix]);
+    if(!c) return '';
+    var itemLabel = count===1 ? itemSing : itemPlural;
+    var statusTxt = statusLabel ? ' '+statusLabel : '';
+    return '<div class="cliente-filtro-resumo">'+count+' '+itemLabel+statusTxt+' para <b>'+esc(c.nome)+'</b></div>';
+  }
+
   /* ---------------- ORÇAMENTOS ---------------- */
   var ORC_FILTRO = 'todas';
   function renderOrcamentos(){
     var chips = filterChips(ORC_FILTRO, ORC_STATUS, 'filter-orc');
     if(!DB.orcamentos.length) return emptyState("📝","Nenhum orçamento ainda","Crie um orçamento com os serviços e a lista de compras interna.");
     var list = DB.orcamentos.slice().sort(function(a,b){return (b.data||"").localeCompare(a.data||"");});
-    if(ORC_FILTRO!=='todas') list = list.filter(function(o){return o.status===ORC_FILTRO;});
-    if(!list.length) return chips+emptyState("📝","Nenhum orçamento com esse status","Escolha outro filtro para ver os demais orçamentos.");
-    return chips+'<div class="rec-list">'+list.map(function(o){
+    if(ORC_FILTRO==='pendentes') list = list.filter(function(o){return o.status==='rascunho'||o.status==='enviado';});
+    else if(ORC_FILTRO!=='todas') list = list.filter(function(o){return o.status===ORC_FILTRO;});
+    if(CLIENTE_FILTROS.orc) list = list.filter(function(o){ return o.clienteId===CLIENTE_FILTROS.orc; });
+    if(ITEM_FILTROS.orc){
+      var orcPicked = DB.orcamentos.find(function(x){return x.id===ITEM_FILTROS.orc;});
+      list = orcPicked ? [orcPicked] : [];
+    }
+    var filtroTags = activeFiltrosTagsHtml('orc');
+    var clienteResumo = clienteFiltroResumoHtml('orc', list.length, statusFiltroLabel(ORC_FILTRO, ORC_STATUS, {pendentes:'pendente'}, list.length), 'orçamento', 'orçamentos');
+    if(!list.length) return chips+filtroTags+clienteResumo+emptyState("📝","Nenhum orçamento com esse filtro","Escolha outro filtro para ver os demais orçamentos.");
+    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(o){
       var total = itemsTotal(o.itensServico)-(Number(o.desconto)||0);
       return '<div class="rec-card" data-open-orc="'+o.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(o.clienteNome)+'</div><div class="rec-num">'+esc(o.numero)+' · '+dateBR(o.data)+'</div></div>'+pill(ORC_STATUS[o.status])+'</div>'+
         (o.titulo? '<div class="rec-meta"><span>📌 '+esc(o.titulo)+'</span></div>' : '')+
@@ -2322,9 +2615,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     updateOrcTotalPreview(form);
     document.getElementById('btn-del-orcamento').hidden = !id;
     document.getElementById('btn-del-orcamento').onclick = function(){
-      customConfirm('Excluir este orçamento?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este orçamento? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('orcamentos', id); loadDBFromStores(); dlg.close(); render(); toast('Orçamento excluído');
+        softDelete('orcamentos', id); loadDBFromStores(); dlg.close(); render(); toast('Orçamento movido para a lixeira');
       });
     };
     dlg.showModal();
@@ -2464,6 +2757,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(digits.length<=11) digits = '55'+digits;
     return 'https://wa.me/'+digits+'?text='+encodeURIComponent(message);
   }
+  /* ---------------- mensagens padronizadas do WhatsApp ----------------
+     Editáveis em Empresa > Mensagens do WhatsApp. Cada modelo usa tokens
+     {assim} que são trocados pelos dados de verdade na hora de enviar -
+     token que não se aplica a esse documento vira string vazia (nunca
+     fica um "{xyz}" literal sobrando na mensagem). */
+  var DEFAULT_TEMPLATE_ORCAMENTO = 'Olá {cliente}! Segue o orçamento {numero} da {empresa}{maquinaTexto}, no valor de {valor}, válido por {validade} dias. Qualquer dúvida estou à disposição!';
+  var DEFAULT_TEMPLATE_OS = 'Olá {cliente}! Segue o comprovante da OS {numero} da {empresa}{maquinaTexto}, no valor de {valor}. Qualquer dúvida estou à disposição!';
+  var DEFAULT_TEMPLATE_COBRANCA = 'Olá {cliente}! Passando para lembrar sobre o pagamento em aberto referente à OS {numero}{maquinaTexto}, no valor de {totalAberto}. Segue o extrato em anexo. Qualquer dúvida estou à disposição!';
+  var DEFAULT_TEMPLATE_RECIBO = 'Olá {cliente}! Segue o recibo referente ao pagamento de {valor} da OS {numero}{maquinaTexto}, recebido em {data}. Qualquer dúvida estou à disposição!';
+  function preencherTemplate(template, vars){
+    return String(template||'').replace(/\{(\w+)\}/g, function(m,k){
+      return (vars && vars[k]!=null) ? String(vars[k]) : '';
+    });
+  }
   function buildOrcamentoObjFromForm(){
     var form = document.getElementById('form-orcamento');
     if(!form.checkValidity()){ form.reportValidity(); return null; }
@@ -2535,7 +2842,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       formaPagamento: document.getElementById('orc-forma-pagamento').value,
       parcelas: ['Cartão parcelado','Boleto parcelado'].indexOf(document.getElementById('orc-forma-pagamento').value)>=0 ? (parseInt(document.getElementById('orc-parcelas-num').value,10)||2) : null,
       prazoDias: document.getElementById('orc-forma-pagamento').value==='Boleto a prazo' ? (parseInt(document.getElementById('orc-prazo-dias').value,10)||30) : null,
-      historico: historico
+      historico: historico,
+      // fotos não são editadas por este formulário (são adicionadas/removidas
+      // direto no detalhe do orçamento) - preserva o que já tinha salvo.
+      fotos: existing ? (existing.fotos||[]) : []
     };
   }
   document.getElementById('btn-orc-salvar-rascunho').addEventListener('click', function(){
@@ -2552,24 +2862,56 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!obj) return;
     var cliente = findCliente(obj.clienteId);
     var total = itemsTotal(obj.itensServico)-(Number(obj.desconto)||0);
-    var msg = 'Olá '+(cliente?cliente.nome:'')+'! Segue o orçamento '+obj.numero+' da HidrauMiller'+(obj.maquina?' para '+obj.maquina:'')+', no valor de '+money(total)+', válido por '+obj.validade+' dias. Qualquer dúvida estou à disposição!';
-    var link = cliente ? whatsappLink(cliente.telefone, msg) : null;
+    var msg = preencherTemplate(DB.config.templateOrcamento || DEFAULT_TEMPLATE_ORCAMENTO, {
+      cliente: cliente?cliente.nome:'', numero: obj.numero, maquina: obj.maquina||'',
+      maquinaTexto: obj.maquina? ' para '+obj.maquina : '', valor: money(total),
+      validade: obj.semValidade? '' : obj.validade, empresa: DB.config.nome||'HidrauMiller'
+    });
     obj.status = 'enviado';
     upsert('orcamentos', obj);
     loadDBFromStores();
     document.getElementById('dlg-orcamento').close();
     render();
     toast('Orçamento enviado');
-    printOrcamento(obj.id);
-    if(link){
-      var win = window.open(link, '_blank');
-      if(!win) customAlert('Gerei o PDF, mas não consegui abrir o WhatsApp automaticamente (bloqueio de pop-up). Abra manualmente: '+link);
-    } else {
-      customAlert('O PDF foi gerado, mas este cliente não tem telefone/WhatsApp cadastrado — não deu para abrir o WhatsApp automaticamente. Adicione o telefone no cadastro do cliente para isso funcionar da próxima vez.');
-    }
+    printOrcamento(obj.id, msg);
+    abrirWhatsappWebFallback(cliente, msg);
   });
 
-  function historicoEntry(texto){ return { ts: new Date().toISOString(), texto: texto }; }
+  // Nome de quem está logado agora (pra registrar "quem alterou" nos
+  // registros). Só existe dentro do app nativo, com login feito - no link
+  // web não tem autenticação, então fica em branco (e a gente não apaga um
+  // "quem" que já estava salvo só porque essa edição em particular veio de
+  // onde não dá pra saber quem foi).
+  function currentUserDisplayName(){
+    try{
+      if(fbAuth && fbAuth.currentUser){
+        return (fbAuth.currentUser.displayName || fbAuth.currentUser.email || '').trim();
+      }
+    }catch(e){}
+    return '';
+  }
+  function ultimaAlteracaoTexto(obj){
+    if(!obj || !obj.ultimaAlteracaoEm) return '';
+    var d = new Date(obj.ultimaAlteracaoEm);
+    if(isNaN(d.getTime())) return '';
+    var quando = dateBR(obj.ultimaAlteracaoEm.slice(0,10))+' às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    var quem = obj.ultimaAlteracaoPor ? esc(obj.ultimaAlteracaoPor)+' · ' : '';
+    return quem+quando;
+  }
+  function ultimaAlteracaoHtml(obj){
+    var t = ultimaAlteracaoTexto(obj);
+    return t ? '<div class="hint" style="margin-top:2px;">🕘 Última alteração: '+t+'</div>' : '';
+  }
+  // Mesmo controle de "quem/quando" dos registros principais, mas por item
+  // dentro da lista de compras (cada item é editado sozinho, sem passar
+  // pelo formulário da OS inteira) - usa os mesmos nomes de campo pra
+  // reaproveitar ultimaAlteracaoTexto/Html.
+  function stampCompraItem(it){
+    it.ultimaAlteracaoEm = new Date().toISOString();
+    var nome = currentUserDisplayName();
+    if(nome) it.ultimaAlteracaoPor = nome;
+  }
+  function historicoEntry(texto){ return { ts: new Date().toISOString(), texto: texto, por: currentUserDisplayName() }; }
   function diffItensResumo(oldItens, newItens){
     oldItens = oldItens||[]; newItens = newItens||[];
     var oldLeft = oldItens.slice();
@@ -2594,7 +2936,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var linhas = historico.slice().reverse().map(function(h){
       var d = new Date(h.ts);
       var quando = isNaN(d.getTime()) ? '' : dateBR(h.ts.slice(0,10))+' às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
-      return '<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--line);"><span style="color:var(--muted);">'+quando+'</span> — '+esc(h.texto)+'</div>';
+      return '<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--line);"><span style="color:var(--muted);">'+quando+(h.por?' · '+esc(h.por):'')+'</span> — '+esc(h.texto)+'</div>';
     }).join('');
     return '<div class="section-title">🕘 Histórico de alterações</div><div>'+linhas+'</div>';
   }
@@ -2618,9 +2960,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       itens: (o.itensServico||[]).map(function(i){ return {desc:i.desc, qtd:i.qtd, valor:i.valor, tipo:i.tipo||'servico'}; }),
       desconto: o.desconto||0,
       descricao: o.obs||"", status:'em_andamento', dataAbertura: todayISO(), dataConclusao:"",
-      listaCompras: (o.listaCompras||[]).map(function(i){ return {desc:i.desc, qtd:i.qtd, valor:i.valor, comprado:false}; }),
+      listaCompras: (o.listaCompras||[]).map(function(i){ return {desc:i.desc, qtd:i.qtd, valor:i.valor, comprado:false, qtdEstoque:0}; }),
       valorTotal: itemsTotal(o.itensServico)-(Number(o.desconto)||0),
-      formaPagamento: o.formaPagamento||"", parcelas: o.parcelas||null, prazoDias: o.prazoDias||null
+      formaPagamento: o.formaPagamento||"", parcelas: o.parcelas||null, prazoDias: o.prazoDias||null,
+      // junta as fotos que já estavam no orçamento - a OS pode receber mais
+      // fotos depois, além dessas (o array é independente a partir daqui).
+      fotos: (o.fotos||[]).map(function(f){ return Object.assign({}, f); })
     };
     upsert('os', os);
     var clienteOS = findCliente(o.clienteId);
@@ -2647,6 +2992,78 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       finishGerarOS('');
     }
   }
+  /* ---------------- fotos (Orçamento/OS) ---------------- */
+  // Comprime uma foto no navegador antes de salvar (redimensiona pro maior
+  // lado caber em maxDim e reexporta como JPEG com a qualidade indicada) -
+  // sem isso, uma foto de celular (3-5MB) sozinha já quase estoura o espaço
+  // total disponível pro app inteiro (localStorage/nuvem).
+  function comprimirImagem(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onerror = function(){ reject(new Error('Não consegui ler o arquivo.')); };
+      reader.onload = function(){
+        var img = new Image();
+        img.onerror = function(){ reject(new Error('Arquivo não é uma imagem válida.')); };
+        img.onload = function(){
+          var w = img.width, h = img.height;
+          if(w>maxDim || h>maxDim){
+            if(w>=h){ h = Math.round(h*(maxDim/w)); w = maxDim; }
+            else { w = Math.round(w*(maxDim/h)); h = maxDim; }
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          try{ resolve(canvas.toDataURL('image/jpeg', quality)); }
+          catch(e){ reject(e); }
+        };
+        img.src = String(reader.result||"");
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  function fotosParent(tipo, parentId){ return tipo==='os' ? findOS(parentId) : findOrcamento(parentId); }
+  function fotosSectionHtml(tipo, parentId, fotos){
+    fotos = fotos || [];
+    var chave = tipo+'|'+parentId;
+    var grid = fotos.map(function(f){
+      return '<div class="foto-thumb-wrap"><img src="'+f.dataUrl+'" class="foto-thumb" title="Ver foto">'+
+        '<button type="button" class="foto-remove no-print" data-remover-foto="'+chave+'|'+f.id+'" title="Remover foto">×</button></div>';
+    }).join('');
+    var podeAdicionar = fotos.length < FOTOS_MAX;
+    return '<div class="section-title">📷 Fotos ('+fotos.length+'/'+FOTOS_MAX+')</div><div class="fotos-grid">'+grid+
+      (podeAdicionar? '<label class="foto-add-btn no-print" title="Adicionar foto"><input type="file" accept="image/*" data-add-foto="'+chave+'" hidden>+</label>' : '')+
+      '</div>';
+  }
+  function adicionarFoto(tipo, parentId, dataUrl){
+    var storeName = tipo==='os' ? 'os' : 'orcamentos';
+    var rec = fotosParent(tipo, parentId);
+    if(!rec) return;
+    rec.fotos = rec.fotos || [];
+    if(rec.fotos.length >= FOTOS_MAX){ toast('Limite de '+FOTOS_MAX+' fotos atingido neste registro.'); return; }
+    rec.fotos.push({ id:uid('foto'), dataUrl:dataUrl, addedEm:new Date().toISOString(), addedPor: currentUserDisplayName() });
+    upsert(storeName, rec);
+    loadDBFromStores();
+    if(tipo==='os') refreshOSDetailIfOpen(parentId); else refreshOrcDetailIfOpen(parentId);
+    render();
+    toast('Foto adicionada');
+  }
+  function removerFoto(tipo, parentId, fotoId){
+    var storeName = tipo==='os' ? 'os' : 'orcamentos';
+    var rec = fotosParent(tipo, parentId);
+    if(!rec || !rec.fotos) return;
+    rec.fotos = rec.fotos.filter(function(f){ return f.id!==fotoId; });
+    upsert(storeName, rec);
+    loadDBFromStores();
+    if(tipo==='os') refreshOSDetailIfOpen(parentId); else refreshOrcDetailIfOpen(parentId);
+    render();
+    toast('Foto removida');
+  }
+  function refreshOrcDetailIfOpen(orcId){
+    var dlg = document.getElementById('dlg-orcamento-detail');
+    if(dlg && dlg.open && CURRENT_ORC_ID===orcId) openOrcamentoDetail(orcId);
+  }
+
   function duplicateOrcamento(id){
     var o = findOrcamento(id); if(!o) return;
     var novo = Object.assign({}, o, {
@@ -2656,7 +3073,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       status: 'rascunho',
       itensServico: (o.itensServico||[]).map(function(i){ return Object.assign({}, i); }),
       listaCompras: (o.listaCompras||[]).map(function(i){ return Object.assign({}, i); }),
-      historico: [ historicoEntry('Orçamento duplicado a partir de '+o.numero) ]
+      historico: [ historicoEntry('Orçamento duplicado a partir de '+o.numero) ],
+      fotos: [] // duplicar não carrega as fotos do original
     });
     upsert('orcamentos', novo);
     loadDBFromStores();
@@ -2675,7 +3093,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       dataAbertura: todayISO(),
       dataConclusao: '',
       itens: (o.itens||[]).map(function(i){ return Object.assign({}, i); }),
-      listaCompras: (o.listaCompras||[]).map(function(i){ return Object.assign({}, i, {comprado:false}); })
+      listaCompras: (o.listaCompras||[]).map(function(i){ return Object.assign({}, i, {comprado:false, qtdEstoque:0}); }),
+      fotos: [] // duplicar não carrega as fotos do original
     });
     upsert('os', novo);
     loadDBFromStores();
@@ -2701,6 +3120,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     html += '<div class="section-title">Itens do orçamento</div>' + itemsTable(o.itensServico, true);
     html += '<div class="section-title">🔒 Lista de compras (interna)</div>' + (o.listaCompras.length? itemsTable(o.listaCompras) : '<div class="hint">Nenhum item.</div>');
     if(o.obs) html += '<div class="section-title">Observações</div><div class="hint" style="color:var(--ink-soft);white-space:pre-wrap;">'+esc(o.obs)+'</div>';
+
+    html += fotosSectionHtml('orcamento', o.id, o.fotos);
 
     html += '<div class="section-title">Status</div><div class="status-row">'+
       Object.keys(ORC_STATUS).map(function(k){ return '<button type="button" class="status-btn'+(o.status===k?' current':'')+'" style="color:var(--'+ORC_STATUS[k].cls+')" data-set-orc-status="'+k+'">'+ORC_STATUS[k].label+'</button>'; }).join('')+
@@ -2742,13 +3163,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var chips = filterChips(OS_FILTRO, OS_STATUS, 'filter-os');
     if(!DB.os.length) return emptyState("🔧","Nenhuma OS ainda","Ordens de serviço nascem de orçamentos aprovados, ou você pode registrar uma diretamente pelo painel do cliente.");
     var list = DB.os.slice().sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");});
-    if(OS_FILTRO!=='todas') list = list.filter(function(o){return o.status===OS_FILTRO;});
-    if(!list.length) return chips+emptyState("🔧","Nenhuma OS com esse status","Escolha outro filtro para ver as demais ordens de serviço.");
-    return chips+'<div class="rec-list">'+list.map(function(o){
-      var comprados = (o.listaCompras||[]).filter(function(i){return i.comprado;}).length;
+    if(OS_FILTRO==='abertas') list = list.filter(function(o){return o.status!=='concluida'&&o.status!=='cancelada';});
+    else if(OS_FILTRO!=='todas') list = list.filter(function(o){return o.status===OS_FILTRO;});
+    if(CLIENTE_FILTROS.os) list = list.filter(function(o){ return o.clienteId===CLIENTE_FILTROS.os; });
+    if(ITEM_FILTROS.os){
+      var osPicked = DB.os.find(function(x){return x.id===ITEM_FILTROS.os;});
+      list = osPicked ? [osPicked] : [];
+    }
+    var filtroTags = activeFiltrosTagsHtml('os');
+    var clienteResumo = clienteFiltroResumoHtml('os', list.length, statusFiltroLabel(OS_FILTRO, OS_STATUS, {abertas:'em aberto'}, list.length), 'ordem de serviço', 'ordens de serviço');
+    if(!list.length) return chips+filtroTags+clienteResumo+emptyState("🔧","Nenhuma OS com esse filtro","Escolha outro filtro para ver as demais ordens de serviço.");
+    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(o){
+      var resolvidos = (o.listaCompras||[]).filter(function(i){return compraStatus(i).key!=='comprar';}).length;
       return '<div class="rec-card" data-open-os="'+o.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(o.clienteNome)+'</div><div class="rec-num">'+esc(o.numero)+' · aberta em '+dateBR(o.dataAbertura)+'</div></div>'+pill(OS_STATUS[o.status])+'</div>'+
         (o.titulo? '<div class="rec-meta"><span>📌 '+esc(o.titulo)+'</span></div>' : '')+
-        '<div class="rec-meta"><span>🚜 '+esc(o.maquina||"—")+'</span>'+((o.listaCompras&&o.listaCompras.length)? '<span>🛒 '+comprados+'/'+o.listaCompras.length+' comprados</span>':'')+'</div>'+
+        '<div class="rec-meta"><span>🚜 '+esc(o.maquina||"—")+'</span>'+((o.listaCompras&&o.listaCompras.length)? '<span>🛒 '+resolvidos+'/'+o.listaCompras.length+' resolvidos</span>':'')+'</div>'+
         '<div class="rec-foot"><span class="rec-value">'+money(o.valorTotal)+'</span></div></div>';
     }).join('')+'</div>';
   }
@@ -2766,6 +3195,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       dt("Total", money(o.valorTotal))+dt("Conclusão", o.dataConclusao? dateBR(o.dataConclusao):"—")+
       dt("Forma de pagamento", esc(formaPagamentoLabel(o)))+
       '</div>';
+    html += ultimaAlteracaoHtml(o);
     if(o.itens && o.itens.length) html += '<div class="section-title">Itens da OS</div>' + itemsTable(o.itens, true);
     if(o.descricao) html += '<div class="section-title">Observações</div><div class="hint" style="color:var(--ink-soft);white-space:pre-wrap;">'+esc(o.descricao)+'</div>';
 
@@ -2774,20 +3204,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
     if(o.listaCompras && o.listaCompras.length){
       html += '<div class="section-title">🛒 Lista de compras</div><div class="checklist">'+
-        o.listaCompras.map(function(it,idx){ return '<div class="check-row'+(it.comprado?' done':'')+'" data-toggle-compra="'+idx+'"><div class="box">'+(it.comprado?'✓':'')+'</div><div style="flex:1;"><b>'+esc(it.desc)+'</b> · qtd '+it.qtd+' · '+money(it.valor)+'</div></div>'; }).join('')+
+        o.listaCompras.map(function(it,idx){ return compraChecklistRowHtml(it, idx, 'data-toggle-compra', 'data-set-estoque-compra', idx); }).join('')+
         '</div><div class="actions-row"><button class="btn sm no-print" data-print-lista="'+o.id+'">📄 Imprimir lista de compras</button></div>';
     }
 
+    html += fotosSectionHtml('os', o.id, o.fotos);
+
     html += '<div class="section-title">Recebimentos vinculados</div>';
     if(!pagamentos.length) html += '<div class="hint">Nenhum recebimento registrado.</div>';
-    else html += '<table class="simple"><tr><th>Valor</th><th>Vencimento</th><th>Status</th></tr>'+pagamentos.map(function(p){return '<tr><td class="num">'+money(p.valor)+'</td><td class="num">'+dateBR(p.vencimento)+'</td><td>'+pill(pagStatusOf(p))+'</td></tr>';}).join('')+'</table>';
+    else html += '<table class="simple"><tr><th>Valor</th><th>Vencimento</th><th>Status</th><th></th></tr>'+pagamentos.map(function(p){return '<tr><td class="num">'+money(p.valor)+'</td><td class="num">'+dateBR(p.vencimento)+'</td><td>'+pill(pagStatusOf(p))+'</td><td>'+(p.status==='pago'? '<button type="button" class="btn sm ghost no-print" data-recibo-pag="'+p.id+'">🧾 Recibo</button>' : '')+'</td></tr>';}).join('')+'</table>';
 
     html += '<div class="section-title">Nota fiscal</div>';
     if(!nfs.length) html += '<div class="hint">Nenhuma NF registrada.</div>';
     else html += '<table class="simple"><tr><th>Nº</th><th>Emissão</th><th>Status</th></tr>'+nfs.map(function(n){return '<tr><td class="num">'+esc(n.numero||"—")+'</td><td class="num">'+dateBR(n.dataEmissao)+'</td><td>'+pill(NF_STATUS[n.status])+'</td></tr>';}).join('')+'</table>';
 
+    var temAberto = pagamentos.some(function(p){ return pagStatusKey(p)!=='pago'; });
     html += '<div class="actions-row">'+
       '<button class="btn sm no-print" data-print-os="'+o.id+'">📄 Gerar PDF da OS</button>'+
+      (temAberto? '<button class="btn sm no-print" data-cobrar-os="'+o.id+'">📲 Cobrar</button>' : '')+
       '<button class="btn sm no-print" data-dup-os="'+o.id+'">📋 Duplicar</button>'+
       '<button class="btn sm" data-nova-para-os="pagamento" data-os-id="'+o.id+'">+ Recebimento</button>'+
       '<button class="btn sm" data-nova-para-os="nf" data-os-id="'+o.id+'">+ Nota fiscal</button>'+
@@ -2795,10 +3229,113 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     document.getElementById('os-detail-body').innerHTML = html;
     dlg.showModal();
   }
+  // Não controlamos estoque de verdade no app (sem entrada/saída de
+  // almoxarifado) - isto é só uma anotação por item: "quanto eu já tenho
+  // em mãos" (qtdEstoque). A partir disso o status é calculado sozinho:
+  // se o que já tem cobre a quantidade necessária, está "Em estoque" e
+  // não precisa comprar nada; senão falta comprar a diferença, e aí o
+  // item some para "Comprado" só quando marcado manualmente (compra da
+  // diferença que faltava).
+  function compraStatus(it){
+    var qtd = Number(it.qtd)||0, estoque = Math.max(0, Number(it.qtdEstoque)||0);
+    var faltam = Math.max(0, qtd-estoque);
+    if(faltam===0) return {key:'estoque', label:'Em estoque', cls:'info', faltam:0};
+    if(it.comprado) return {key:'comprado', label:'Comprado', cls:'good', faltam:faltam};
+    return {key:'comprar', label:'A comprar ('+faltam+')', cls:'warn', faltam:faltam};
+  }
+  function compraChecklistRowHtml(it, idx, toggleAttr, estoqueAttr, attrVal){
+    var st = compraStatus(it);
+    var resolvido = st.key!=='comprar';
+    var podeMarcar = st.key!=='estoque'; // já 100% coberto pelo estoque - não faz sentido "comprar"
+    var atualizadoTxt = ultimaAlteracaoTexto(it);
+    return '<div class="check-row-compra'+(resolvido?' done':'')+'">'+
+      '<div class="check-toggle'+(podeMarcar?'':' disabled')+'"'+(podeMarcar?' '+toggleAttr+'="'+attrVal+'"':'')+'>'+
+        '<div class="box">'+(resolvido?'✓':'')+'</div>'+
+        '<div style="flex:1;min-width:0;"><b>'+esc(it.desc)+'</b> · qtd '+it.qtd+' · '+money(it.valor)+
+          (atualizadoTxt? '<div class="hint" style="font-size:11px;margin-top:2px;">🕘 '+atualizadoTxt+'</div>' : '')+
+        '</div>'+
+      '</div>'+
+      '<div class="compra-estoque-field" title="Quanto você já tem em mãos deste item"><label>Em estoque</label><input type="number" min="0" step="1" value="'+(Number(it.qtdEstoque)||0)+'" '+estoqueAttr+'="'+attrVal+'"></div>'+
+      '<div class="compra-status-badge">'+pill(st)+'</div>'+
+    '</div>';
+  }
   function toggleCompraItem(osId, idx){
     var o = findOS(osId); if(!o) return;
+    var st = compraStatus(o.listaCompras[idx]);
+    if(st.key==='estoque') return; // já coberto pelo estoque - o clique fica desabilitado, mas por segurança
     o.listaCompras[idx].comprado = !o.listaCompras[idx].comprado;
+    stampCompraItem(o.listaCompras[idx]);
     upsert('os', o); loadDBFromStores(); openOSDetail(osId); render();
+  }
+  // Mesma lógica de toggleCompraItem, mas sem reabrir o detalhe da OS -
+  // usada pela tela "Lista de Compras" (módulo geral), onde marcar um item
+  // deve só atualizar aquele cartão, sem popar o dialog da OS por cima.
+  function toggleCompraItemGeral(osId, idx){
+    var o = findOS(osId); if(!o) return;
+    var st = compraStatus(o.listaCompras[idx]);
+    if(st.key==='estoque') return;
+    o.listaCompras[idx].comprado = !o.listaCompras[idx].comprado;
+    stampCompraItem(o.listaCompras[idx]);
+    upsert('os', o); loadDBFromStores(); render();
+  }
+  function setEstoqueCompra(osId, idx, valor){
+    var o = findOS(osId); if(!o || !o.listaCompras[idx]) return;
+    var n = Math.max(0, Math.round(Number(valor))||0);
+    o.listaCompras[idx].qtdEstoque = n;
+    // se a quantidade em estoque agora cobre tudo, tira o "comprado" (não
+    // faz mais sentido marcar como comprado um item que já tinha em mãos)
+    if(n >= (Number(o.listaCompras[idx].qtd)||0)) o.listaCompras[idx].comprado = false;
+    stampCompraItem(o.listaCompras[idx]);
+    upsert('os', o); loadDBFromStores();
+  }
+  function setEstoqueCompraDialog(osId, idx, valor){
+    setEstoqueCompra(osId, idx, valor);
+    openOSDetail(osId); render();
+  }
+  function setEstoqueCompraGeral(osId, idx, valor){
+    setEstoqueCompra(osId, idx, valor);
+    render();
+  }
+  /* ---------------- LISTA DE COMPRAS (módulo geral) ---------------- */
+  function renderListaComprasGeral(){
+    var osComLista = DB.os.filter(function(o){
+      return o.status!=='concluida' && o.status!=='cancelada' && o.listaCompras && o.listaCompras.length;
+    }).sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");});
+
+    var totalPendentes = 0, custoPendente = 0;
+    osComLista.forEach(function(o){
+      o.listaCompras.forEach(function(it){
+        var st = compraStatus(it);
+        if(st.key==='comprar'){ totalPendentes++; custoPendente += st.faltam*(Number(it.valor)||0); }
+      });
+    });
+
+    var html = '<div class="kpi-grid">'+
+      kpi("Itens a comprar", totalPendentes, totalPendentes>0?"accent":"")+
+      kpi("Custo estimado a comprar", money(custoPendente))+
+      kpi("OS com lista de compras", osComLista.length)+
+      '</div>';
+    html += '<p class="hint" style="margin:-6px 0 16px;">"Em estoque" conta o que você já informou que tem em mãos; "A comprar" mostra só o que falta pra completar a quantidade necessária.</p>';
+
+    if(!osComLista.length){
+      return html + emptyState("🛒","Nenhuma lista de compras pendente","Itens de \"lista de compras\" aparecem aqui quando uma OS em andamento tiver itens marcados no orçamento ou na própria OS.");
+    }
+
+    html += osComLista.map(function(o){
+      var resolvidos = o.listaCompras.filter(function(i){return compraStatus(i).key!=='comprar';}).length;
+      return '<div class="panel"><div class="panel-head"><h2>🔧 '+esc(o.numero)+' · '+esc(o.clienteNome)+'</h2>'+
+        '<button class="btn sm no-print" data-open-os="'+o.id+'">Abrir OS</button></div>'+
+        '<div class="panel-body">'+
+        (o.maquina? '<div class="hint" style="margin-bottom:10px;">🚜 '+esc(o.maquina)+'</div>' : '')+
+        '<div class="checklist">'+
+        o.listaCompras.map(function(it,idx){
+          return compraChecklistRowHtml(it, idx, 'data-toggle-compra-geral', 'data-set-estoque-compra-geral', o.id+'|'+idx);
+        }).join('')+
+        '</div>'+
+        '<div class="hint" style="margin-top:8px;">'+resolvidos+'/'+o.listaCompras.length+' resolvidos (em estoque ou comprados)</div>'+
+        '</div></div>';
+    }).join('');
+    return html;
   }
   function setOSStatus(id, status){
     var o=findOS(id); if(!o) return;
@@ -2811,25 +3348,55 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   /* ---------------- PAGAMENTOS ---------------- */
   var PAG_FILTRO = 'todas';
   function renderPagamentos(){
-    var abertosList = DB.pagamentos.filter(function(p){ return p.status!=='pago'; });
-    var totalAReceber = abertosList.reduce(function(s,p){ return s + Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
-    var atrasadosList = DB.pagamentos.filter(function(p){ return pagStatusOf(p).label==='Atrasado'; });
-    var kpiHtml = '<div class="kpi-grid">'+
-      kpi("A receber", money(totalAReceber), "accent", abertosList.length+" título(s) em aberto")+
-      kpi("Atrasados", atrasadosList.length, atrasadosList.length>0?"bad":"")+
-      kpi("Total de recebimentos", DB.pagamentos.length, "")+
-    '</div>';
+    var clienteFiltrado = CLIENTE_FILTROS.pag ? findCliente(CLIENTE_FILTROS.pag) : null;
     var chips = filterChips(PAG_FILTRO, PAG_STATUS_FILTROS, 'filter-pag');
     if(!DB.pagamentos.length) return emptyState("💰","Nenhum recebimento registrado","Vincule recebimentos a uma ordem de serviço para controlar o que está em aberto.");
     var list = DB.pagamentos.slice().sort(function(a,b){return (a.vencimento||"").localeCompare(b.vencimento||"");});
-    if(PAG_FILTRO!=='todas') list = list.filter(function(p){return pagStatusKey(p)===PAG_FILTRO;});
-    if(!list.length) return chips+kpiHtml+emptyState("💰","Nenhum recebimento com esse status","Escolha outro filtro para ver os demais recebimentos.");
-    return chips+kpiHtml+'<div class="rec-list">'+list.map(function(p){
+    if(PAG_FILTRO==='pendentes') list = list.filter(function(p){return pagStatusKey(p)!=='pago';});
+    else if(PAG_FILTRO!=='todas') list = list.filter(function(p){return pagStatusKey(p)===PAG_FILTRO;});
+    if(CLIENTE_FILTROS.pag) list = list.filter(function(p){ var o=findOS(p.osId); return o && o.clienteId===CLIENTE_FILTROS.pag; });
+    if(OS_FILTROS.pag) list = list.filter(function(p){ return p.osId===OS_FILTROS.pag; });
+    var filtroTags = activeFiltrosTagsHtml('pag');
+    // "Valor total" é a referência fixa: soma TODOS os títulos do cliente
+    // (ou de todos os clientes, sem filtro de cliente), sem entrar no
+    // filtro de status — por isso usa listClienteBase, não list. Os outros
+    // 3 cards (Recebido, Saldo em aberto, Atrasados) continuam batendo
+    // exatamente com a lista mostrada embaixo (cliente + status já
+    // aplicados), por isso usam list. Todos seguem o mesmo padrão: valor em
+    // R$ como número principal + quantidade de títulos como legenda.
+    var listClienteBase = DB.pagamentos.slice();
+    if(CLIENTE_FILTROS.pag) listClienteBase = listClienteBase.filter(function(p){ var o=findOS(p.osId); return o && o.clienteId===CLIENTE_FILTROS.pag; });
+    if(OS_FILTROS.pag) listClienteBase = listClienteBase.filter(function(p){ return p.osId===OS_FILTROS.pag; });
+    var totalValor = listClienteBase.reduce(function(s,p){ return s + (Number(p.valor)||0); },0);
+    var recebidoList = list.filter(function(p){ return (Number(p.valorPago)||0)>0; });
+    var totalRecebido = recebidoList.reduce(function(s,p){ return s + (Number(p.valorPago)||0); },0);
+    var totalSaldo = list.reduce(function(s,p){ return s + Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
+    var emAbertoCount = list.filter(function(p){ return pagStatusKey(p)!=='pago'; }).length;
+    var atrasadosList = list.filter(function(p){ return pagStatusKey(p)==='atrasado'; });
+    var totalAtrasado = atrasadosList.reduce(function(s,p){ return s + Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
+    function kpiTitulo(base){ return clienteFiltrado ? base+' — '+clienteFiltrado.nome : base; }
+    var kpiHtml = '<div class="kpi-grid">'+
+      kpi(kpiTitulo("Valor total"), money(totalValor), "", listClienteBase.length+" título(s)")+
+      kpi(kpiTitulo("Recebido"), money(totalRecebido), "good", recebidoList.length+" título(s) com pagamento")+
+      kpi(kpiTitulo("Saldo em aberto"), money(totalSaldo), "accent", emAbertoCount+" título(s) em aberto")+
+      kpi(kpiTitulo("Atrasados"), money(totalAtrasado), atrasadosList.length>0?"bad":"", atrasadosList.length+" título(s)")+
+    '</div>';
+    var clienteResumo = clienteFiltroResumoHtml('pag', list.length, statusFiltroLabel(PAG_FILTRO, PAG_STATUS_FILTROS, {pendentes:'pendente'}, list.length), 'recebimento', 'recebimentos');
+    if(!list.length) return chips+filtroTags+kpiHtml+clienteResumo+emptyState("💰","Nenhum recebimento com esse filtro","Escolha outro filtro para ver os demais recebimentos.");
+    return chips+filtroTags+kpiHtml+clienteResumo+'<div class="rec-list">'+list.map(function(p){
       var os=findOS(p.osId); var st=pagStatusOf(p);
       var saldo = (Number(p.valor)||0)-(Number(p.valorPago)||0);
+      // pago com atraso: mesmo depois de quitado, o status "Pago" não mostra
+      // mais se foi na data certa - comparar data do pagamento x vencimento
+      // é o que deixa visível quais clientes não pagam em dia.
+      var pagoComAtraso = p.dataPagamento && p.vencimento && p.dataPagamento > p.vencimento;
+      var parcelaTag = p.ehEntrada ? '<span>🎯 Entrada</span>' : (p.parcelaTotal>1 ? '<span>📑 parcela '+p.parcelaAtual+'/'+p.parcelaTotal+'</span>' : '');
       return '<div class="rec-card" data-open-pagamento="'+p.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(os?os.clienteNome:"—")+'</div><div class="rec-num">'+(os?esc(os.numero):"")+' · vence '+dateBR(p.vencimento)+'</div></div>'+pill(st)+'</div>'+
-        '<div class="rec-meta"><span>'+esc(p.forma||"—")+'</span>'+(p.parcelaTotal>1?'<span>📑 parcela '+p.parcelaAtual+'/'+p.parcelaTotal+'</span>':'')+'</div>'+
-        '<div class="rec-foot"><span class="rec-value">'+money(p.valor)+'</span><span class="hint">'+(saldo>0? 'saldo '+money(saldo) : 'quitado')+'</span></div></div>';
+        '<div class="rec-meta"><span>'+esc(p.forma||"—")+'</span>'+parcelaTag+(pagoComAtraso?'<span style="color:var(--bad);">⚠️ pago com atraso ('+dateBR(p.dataPagamento)+')</span>':'')+'</div>'+
+        '<div class="rec-foot"><span class="rec-value">'+money(p.valor)+'</span><span class="hint">'+(saldo>0? 'saldo '+money(saldo) : 'quitado')+'</span>'+
+        (p.status!=='pago' && os? '<button type="button" class="btn sm ghost no-print" data-cobrar-pag="'+p.osId+'">📲 Cobrar</button>' : '')+
+        (p.status==='pago'? '<button type="button" class="btn sm ghost no-print" data-recibo-pag="'+p.id+'">🧾 Recibo</button>' : '')+
+        '</div></div>';
     }).join('')+'</div>';
   }
   function fillOSSelect(sel, selectedId){
@@ -2875,33 +3442,56 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var presetOS = presetOsId? findOS(presetOsId) : null;
     var p = id? DB.pagamentos.find(function(x){return x.id===id;}) : {id:uid('pag'), osId:presetOsId||"", valor: presetOS? presetOS.valorTotal : 0, valorPago:0, forma: presetOS? mapFormaPagamentoParaPagamento(presetOS.formaPagamento) : "Pix", vencimento:todayISO(), status:'em_aberto', obs:""};
     document.getElementById('dlg-pagamento-title').textContent = id? "Editar recebimento" : "Novo recebimento";
+    document.getElementById('pagamento-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(p);
     form.id.value=p.id;
     fillOSSelect(document.getElementById('pag-os-select'), p.osId);
-    form.valor.value=p.valor; form.valorPago.value=p.valorPago||0; form.forma.value=p.forma||"Pix"; form.vencimento.value=p.vencimento||""; form.obs.value=p.obs||"";
+    form.valor.value=p.valor; form.valorPago.value=p.valorPago||0; form.forma.value=p.forma||"Pix"; form.vencimento.value=p.vencimento||""; form.dataPagamento.value=p.dataPagamento||""; form.obs.value=p.obs||"";
     updatePagamentoOsInfo(p.osId);
     document.getElementById('pagamento-parcelado-check').checked = false;
     document.getElementById('pagamento-parcelas-field').hidden = true;
     document.getElementById('pagamento-parcelas-hint').hidden = true;
     document.getElementById('pagamento-parcelas-num').value = 2;
+    document.getElementById('pagamento-entrada-valor').value = 0;
+    document.getElementById('pagamento-entrada-parcelas-num').value = 2;
     var novoWrapPag = document.getElementById('pagamento-parcelamento-novo');
     var infoWrapPag = document.getElementById('pagamento-parcelamento-info');
     if(id && p.parcelaTotal>1){
       novoWrapPag.hidden = true;
+      document.getElementById('pagamento-entrada-parcelas').hidden = true;
       infoWrapPag.hidden = false;
-      infoWrapPag.textContent = '📑 Parcela '+p.parcelaAtual+' de '+p.parcelaTotal+' de um recebimento parcelado — edite valor/vencimento desta parcela normalmente.';
+      infoWrapPag.textContent = p.ehEntrada
+        ? '🎯 Este é o registro da entrada (1 de '+p.parcelaTotal+') de um recebimento com entrada + parcelas — edite valor/data normalmente.'
+        : '📑 Parcela '+p.parcelaAtual+' de '+p.parcelaTotal+' de um recebimento parcelado — edite valor/vencimento desta parcela normalmente.';
     } else {
-      novoWrapPag.hidden = false;
       infoWrapPag.hidden = true;
+      updatePagFormaUI();
     }
     document.getElementById('btn-del-pagamento').hidden = !id;
     document.getElementById('btn-del-pagamento').onclick=function(){
-      customConfirm('Excluir este recebimento?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este recebimento? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('pagamentos', id); loadDBFromStores(); dlg.close(); render(); toast('Recebimento excluído');
+        softDelete('pagamentos', id); loadDBFromStores(); dlg.close(); render(); toast('Recebimento movido para a lixeira');
       });
     };
+    document.getElementById('btn-recibo-pagamento').hidden = !(id && p.status==='pago');
+    document.getElementById('btn-recibo-pagamento').onclick=function(){ gerarReciboPagamento(id); };
     dlg.showModal();
   }
+  // Alterna entre os dois jeitos de estruturar um recebimento novo:
+  // "Recebimento parcelado" (divide tudo em N parcelas iguais) ou "Entrada +
+  // parcelas" (desconta uma entrada e divide só o saldo). São mutuamente
+  // exclusivos - só fazem sentido para um recebimento que ainda não existe.
+  function updatePagFormaUI(){
+    var isEntradaParcelas = document.getElementById('pag-forma-select').value === 'Entrada + parcelas';
+    document.getElementById('pagamento-entrada-parcelas').hidden = !isEntradaParcelas;
+    document.getElementById('pagamento-parcelamento-novo').hidden = isEntradaParcelas;
+    if(isEntradaParcelas){
+      document.getElementById('pagamento-parcelado-check').checked = false;
+      document.getElementById('pagamento-parcelas-field').hidden = true;
+      document.getElementById('pagamento-parcelas-hint').hidden = true;
+    }
+  }
+  document.getElementById('pag-forma-select').addEventListener('change', updatePagFormaUI);
   document.getElementById('pagamento-parcelado-check').addEventListener('change', function(){
     document.getElementById('pagamento-parcelas-field').hidden = !this.checked;
     document.getElementById('pagamento-parcelas-hint').hidden = !this.checked;
@@ -2912,10 +3502,49 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var existing = DB.pagamentos.find(function(x){return x.id===f.id.value;});
     var osId = document.getElementById('pag-os-select').value;
     var valor=parseFloat(f.valor.value)||0, valorPago=parseFloat(f.valorPago.value)||0;
-    var forma=f.forma.value, vencimentoBase=f.vencimento.value, obs=f.obs.value.trim();
+    var forma=f.forma.value, vencimentoBase=f.vencimento.value, dataPagamento=f.dataPagamento.value, obs=f.obs.value.trim();
 
-    var isParcelado = !existing && document.getElementById('pagamento-parcelado-check').checked;
+    var isEntradaParcelas = !existing && forma==='Entrada + parcelas';
+    var isParcelado = !existing && !isEntradaParcelas && document.getElementById('pagamento-parcelado-check').checked;
     var numParcelas = isParcelado ? Math.max(2, parseInt(document.getElementById('pagamento-parcelas-num').value,10)||2) : 1;
+
+    if(isEntradaParcelas){
+      var entradaValor = Math.max(0, parseFloat(document.getElementById('pagamento-entrada-valor').value)||0);
+      var numParcelasSaldo = Math.max(1, parseInt(document.getElementById('pagamento-entrada-parcelas-num').value,10)||1);
+      if(entradaValor>=valor || valor<=0){
+        customAlert('O valor da entrada precisa ser menor que o valor total do recebimento.');
+        return;
+      }
+      var grupoIdEP = uid('grp'), totalRegistrosEP = numParcelasSaldo+1;
+      // registro 1: a entrada em si, com a data de vencimento/pagamento informadas acima
+      upsert('pagamentos', {
+        id: f.id.value, osId:osId, valor:entradaValor, valorPago:0, forma:forma,
+        vencimento: vencimentoBase||todayISO(), dataPagamento:dataPagamento, obs:obs, status:'em_aberto',
+        parcelaAtual:1, parcelaTotal:totalRegistrosEP, parceladoGrupoId:grupoIdEP, ehEntrada:true
+      });
+      // o saldo (valor - entrada) divide em parcelas mensais iguais, a partir do mês seguinte
+      var saldoEP = Math.round((valor-entradaValor)*100)/100;
+      var valorParcelaEP = Math.round((saldoEP/numParcelasSaldo)*100)/100;
+      var somaParcialEP = 0;
+      var vBaseEP = vencimentoBase ? new Date(vencimentoBase+'T00:00:00') : new Date(todayISO()+'T00:00:00');
+      for(var j=0;j<numParcelasSaldo;j++){
+        var vencEP = new Date(vBaseEP.getFullYear(), vBaseEP.getMonth()+j+1, vBaseEP.getDate());
+        var vencISOEP = vencEP.getFullYear()+'-'+String(vencEP.getMonth()+1).padStart(2,'0')+'-'+String(vencEP.getDate()).padStart(2,'0');
+        var valorEstaEP = (j===numParcelasSaldo-1) ? Math.round((saldoEP-somaParcialEP)*100)/100 : valorParcelaEP;
+        somaParcialEP += valorEstaEP;
+        upsert('pagamentos', {
+          id: uid('pag'), osId:osId, valor:valorEstaEP, valorPago:0, forma:forma,
+          vencimento:vencISOEP, dataPagamento:"", obs:obs, status:'em_aberto',
+          parcelaAtual: j+2, parcelaTotal:totalRegistrosEP, parceladoGrupoId:grupoIdEP
+        });
+      }
+      loadDBFromStores();
+      document.getElementById('dlg-pagamento').close();
+      render();
+      refreshOSDetailIfOpen(osId);
+      toast('Entrada + '+numParcelasSaldo+' parcela(s) criadas');
+      return;
+    }
 
     if(isParcelado){
       var grupoId = uid('grp');
@@ -2936,19 +3565,22 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       loadDBFromStores();
       document.getElementById('dlg-pagamento').close();
       render();
+      refreshOSDetailIfOpen(osId);
       toast(numParcelas+' parcelas de recebimento criadas');
       return;
     }
 
     var obj = { id:f.id.value, osId: osId, valor:valor, valorPago:valorPago,
-      forma:forma, vencimento:vencimentoBase, obs:obs, status: valorPago>=valor && valor>0 ? 'pago' : 'em_aberto',
+      forma:forma, vencimento:vencimentoBase, dataPagamento:dataPagamento, obs:obs, status: valorPago>=valor && valor>0 ? 'pago' : 'em_aberto',
       parcelaAtual: existing? existing.parcelaAtual : undefined,
       parcelaTotal: existing? existing.parcelaTotal : undefined,
-      parceladoGrupoId: existing? existing.parceladoGrupoId : undefined };
+      parceladoGrupoId: existing? existing.parceladoGrupoId : undefined,
+      ehEntrada: existing? existing.ehEntrada : undefined };
     upsert('pagamentos', obj);
     loadDBFromStores();
     document.getElementById('dlg-pagamento').close();
     render();
+    refreshOSDetailIfOpen(osId);
     toast('Recebimento salvo');
   });
 
@@ -2959,8 +3591,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!DB.nf.length) return emptyState("🧾","Nenhuma NF registrada","Registre aqui o número e status da nota fiscal de cada OS.");
     var list = DB.nf.slice().sort(function(a,b){return (b.dataEmissao||"").localeCompare(a.dataEmissao||"");});
     if(NF_FILTRO!=='todas') list = list.filter(function(n){return n.status===NF_FILTRO;});
-    if(!list.length) return chips+emptyState("🧾","Nenhuma NF com esse status","Escolha outro filtro para ver as demais notas.");
-    return chips+'<div class="rec-list">'+list.map(function(n){
+    if(CLIENTE_FILTROS.nf) list = list.filter(function(n){ var o=findOS(n.osId); return o && o.clienteId===CLIENTE_FILTROS.nf; });
+    if(OS_FILTROS.nf) list = list.filter(function(n){ return n.osId===OS_FILTROS.nf; });
+    var filtroTags = activeFiltrosTagsHtml('nf');
+    var clienteResumo = clienteFiltroResumoHtml('nf', list.length, statusFiltroLabel(NF_FILTRO, NF_STATUS, {}, list.length), 'nota fiscal', 'notas fiscais');
+    if(!list.length) return chips+filtroTags+clienteResumo+emptyState("🧾","Nenhuma NF com esse filtro","Escolha outro filtro para ver as demais notas.");
+    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(n){
       var os=findOS(n.osId);
       return '<div class="rec-card" data-open-nf="'+n.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(os?os.clienteNome:"—")+'</div><div class="rec-num">NF '+esc(n.numero||"s/n")+' · '+(os?esc(os.numero):"")+'</div></div>'+pill(NF_STATUS[n.status])+'</div>'+
         '<div class="rec-meta"><span>Emissão: '+dateBR(n.dataEmissao)+'</span></div>'+
@@ -2971,14 +3607,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var dlg=document.getElementById('dlg-nf'), form=document.getElementById('form-nf');
     var n = id? DB.nf.find(function(x){return x.id===id;}) : {id:uid('nf'), osId:presetOsId||"", numero:"", dataEmissao:"", valor:0, status:'pendente'};
     document.getElementById('dlg-nf-title').textContent = id? "Editar nota fiscal" : "Registrar nota fiscal";
+    document.getElementById('nf-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(n);
     form.id.value=n.id;
     fillOSSelect(document.getElementById('nf-os-select'), n.osId);
     form.numero.value=n.numero||""; form.dataEmissao.value=n.dataEmissao||""; form.valor.value=n.valor||0; form.status.value=n.status||'pendente';
     document.getElementById('btn-del-nf').hidden = !id;
     document.getElementById('btn-del-nf').onclick=function(){
-      customConfirm('Excluir este registro de NF?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este registro de NF? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('nf', id); loadDBFromStores(); dlg.close(); render(); toast('Registro excluído');
+        softDelete('nf', id); loadDBFromStores(); dlg.close(); render(); toast('Registro movido para a lixeira');
       });
     };
     dlg.showModal();
@@ -2991,6 +3628,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     loadDBFromStores();
     document.getElementById('dlg-nf').close();
     render();
+    refreshOSDetailIfOpen(obj.osId);
     toast('Nota fiscal registrada');
   });
 
@@ -3127,6 +3765,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var dlg=document.getElementById('dlg-despesa'), form=document.getElementById('form-despesa');
     var d = id? DB.despesas.find(function(x){return x.id===id;}) : {id:uid('desp'), descricao:"", categoria:"outros", fornecedorId:"", valor:0, vencimento:todayISO(), status:'aberto', recorrente:false, dataPagamento:"", obs:""};
     document.getElementById('dlg-despesa-title').textContent = id? "Editar despesa" : "Nova despesa";
+    document.getElementById('despesa-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(d);
     form.id.value=d.id; form.descricao.value=d.descricao||"";
     fillDespesaCategoriaSelect(document.getElementById('despesa-categoria-select'), d.categoria);
     fillFornecedorSelect(document.getElementById('despesa-fornecedor-select'), d.fornecedorId);
@@ -3152,9 +3791,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     document.getElementById('btn-del-despesa').hidden = !id;
     document.getElementById('btn-del-despesa').onclick=function(){
-      customConfirm('Excluir esta despesa?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir esta despesa? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('despesas', id); loadDBFromStores(); dlg.close(); render(); toast('Despesa excluída');
+        softDelete('despesas', id); loadDBFromStores(); dlg.close(); render(); toast('Despesa movida para a lixeira');
       });
     };
     dlg.showModal();
@@ -3251,12 +3890,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var dlg=document.getElementById('dlg-fornecedor'), form=document.getElementById('form-fornecedor');
     var f = id? findFornecedor(id) : {id:uid('forn'), nome:"", categoria:"pecas", telefone:"", email:"", obs:""};
     document.getElementById('dlg-fornecedor-title').textContent = id? "Editar fornecedor" : "Novo fornecedor";
+    document.getElementById('fornecedor-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(f);
     ['id','nome','categoria','telefone','email','obs'].forEach(function(k){ if(form[k]) form[k].value = f[k]||""; });
     document.getElementById('btn-del-fornecedor').hidden = !id;
     document.getElementById('btn-del-fornecedor').onclick=function(){
-      customConfirm('Excluir este fornecedor? As despesas já registradas continuam, mas ficam sem fornecedor vinculado.', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este fornecedor? As despesas já registradas continuam, mas ficam sem fornecedor vinculado. Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('fornecedores', id); loadDBFromStores(); dlg.close(); render(); toast('Fornecedor excluído');
+        softDelete('fornecedores', id); loadDBFromStores(); dlg.close(); render(); toast('Fornecedor movido para a lixeira');
       });
     };
     var prodWrap = document.getElementById('fornecedor-produtos-wrap');
@@ -3337,6 +3977,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var p = id? findProduto(id) : {id:uid('prod'), tipo:"produto", nome:"", fornecedorId:"", custoRef:0, precoRef:0, obs:"", historico:[]};
     if(!id) LAST_SAVED_PRODUTO_ID = null;
     document.getElementById('dlg-produto-title').textContent = id? "Editar item" : "Novo item";
+    document.getElementById('produto-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(p);
     form.id.value=p.id; form.nome.value=p.nome||"";
     document.getElementById('produto-tipo-select').value = p.tipo||"produto";
     document.getElementById('produto-fornecedor-field').hidden = (p.tipo==='servico');
@@ -3347,9 +3988,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else { histWrap.hidden = true; }
     document.getElementById('btn-del-produto').hidden = !id;
     document.getElementById('btn-del-produto').onclick=function(){
-      customConfirm('Excluir este item do catálogo?', {okLabel:'Excluir'}).then(function(ok){
+      customConfirm('Excluir este item do catálogo? Vai para a Lixeira — dá para restaurar em até 30 dias.', {okLabel:'Excluir'}).then(function(ok){
         if(!ok) return;
-        removeRec('produtos', id); loadDBFromStores(); dlg.close(); render(); toast('Item excluído');
+        softDelete('produtos', id); loadDBFromStores(); dlg.close(); render(); toast('Item movido para a lixeira');
       });
     };
     dlg.showModal();
@@ -3403,16 +4044,47 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       loadDBFromStores();
       toast('Markup padrão atualizado');
     }
+    else if(e.target.hasAttribute('data-set-estoque-compra') && CURRENT_OS_ID){
+      setEstoqueCompraDialog(CURRENT_OS_ID, parseInt(e.target.getAttribute('data-set-estoque-compra'),10), e.target.value);
+    }
+    else if(e.target.hasAttribute('data-add-foto')){
+      var inputFoto = e.target;
+      var file = inputFoto.files && inputFoto.files[0];
+      inputFoto.value = ""; // permite escolher o mesmo arquivo de novo depois
+      if(!file) return;
+      var partesAdd = inputFoto.getAttribute('data-add-foto').split('|'), tipoAdd=partesAdd[0], parentIdAdd=partesAdd[1];
+      toast('Adicionando foto...');
+      comprimirImagem(file, 1280, 0.72).then(function(dataUrl){
+        adicionarFoto(tipoAdd, parentIdAdd, dataUrl);
+      }).catch(function(err){
+        customAlert('Não consegui adicionar essa foto. '+(err&&err.message?err.message:''));
+      });
+    }
   });
 
   /* ---------------- CONFIG ---------------- */
+  function renderPerfilPanel(){
+    if(!isNativeApp() || !fbAuth || !fbAuth.currentUser) return '';
+    var nome = fbAuth.currentUser.displayName || '';
+    return '<div class="panel"><div class="panel-head"><h2>👤 Seu perfil</h2></div><div class="panel-body">'+
+      '<div class="hint" style="margin-bottom:10px;">Esse nome aparece nos registros de "última alteração" quando você mexe em orçamentos, OS, recebimentos, etc. — assim dá pra saber quem alterou o quê, principalmente quando mais de uma pessoa usa o mesmo sistema.</div>'+
+      (!nome? '<div class="hint" style="color:var(--bad);margin-bottom:10px;">⚠️ Você ainda não tem um nome cadastrado — preencha abaixo.</div>' : '')+
+      '<form id="form-perfil-nome" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">'+
+        '<div class="field" style="flex:1;min-width:160px;margin-bottom:0;"><label>Seu nome</label><input type="text" id="perfil-nome-input" value="'+esc(nome)+'" placeholder="Ex: Raissa"></div>'+
+        '<button type="submit" class="btn primary sm">Salvar nome</button>'+
+      '</form>'+
+      '<div class="hint" style="margin-top:8px;">Conta: '+esc(fbAuth.currentUser.email||'')+'</div>'+
+    '</div></div>';
+  }
   function renderConfig(){
     var c = DB.config;
-    var html = '<div class="panel"><div class="panel-body">'+
+    var html = renderPerfilPanel();
+    html += '<div class="panel"><div class="panel-body">'+
       '<div class="detail-grid">'+dt("Nome",esc(c.nome))+dt("Responsável",esc(c.responsavel||"—"))+
       dt("Telefone",esc(c.telefone||"—"))+dt("E-mail",esc(c.email||"—"))+
       dt("Cidade/UF",esc(c.cidade||"—"))+dt("CNPJ",esc(c.cnpj||"—"))+'</div>'+
       '<button class="btn primary" data-edit-config>Editar dados da empresa</button></div></div>';
+    html += renderPixPanel();
 
     html += '<div class="panel"><div class="panel-head"><h2>Categorias de despesa</h2><button class="btn sm" data-add-categoria>+ Nova categoria</button></div><div class="panel-body">';
     html += '<div class="section-title">Fixas</div><div class="chip-filter" style="margin-bottom:0;">'+
@@ -3425,9 +4097,83 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       custom.map(function(cat){ return '<span class="chip" style="cursor:default;display:inline-flex;align-items:center;gap:6px;">'+esc(cat.ic||"🏷️")+' '+esc(cat.label)+'<button type="button" class="btn ghost sm" style="padding:0 2px;" data-del-categoria="'+cat.key+'" title="Remover categoria">×</button></span>'; }).join('')+
       '</div>';
     html += '</div></div>';
+    html += renderMensagensPanel();
     html += renderBackupPanel();
     if(isNativeApp()) html += renderSyncPanel();
     return html;
+  }
+  function mensagemFieldHtml(id, label, valorAtual, padrao, tokens){
+    return '<div class="field"><label>'+esc(label)+'</label>'+
+      '<textarea id="'+id+'" rows="3">'+esc(valorAtual||padrao)+'</textarea>'+
+      '<div class="hint" style="margin-top:4px;">Textos disponíveis: '+tokens.map(function(t){return '<code>{'+t+'}</code>';}).join(' ')+'</div>'+
+      '</div>';
+  }
+  function renderMensagensPanel(){
+    var c = DB.config;
+    return '<div class="panel"><div class="panel-head"><h2>📲 Mensagens do WhatsApp</h2></div><div class="panel-body">'+
+      '<div class="hint" style="margin-bottom:12px;">Usadas quando você manda o orçamento, o comprovante da OS, uma cobrança ou um recibo pelo WhatsApp — o PDF vai anexado e essa mensagem vai junto (no app instalado, você escolhe ali mesmo se manda pelo WhatsApp normal ou pelo Business). Os textos entre chaves são preenchidos sozinhos com os dados de cada cliente/OS.</div>'+
+      '<form id="form-mensagens" style="display:flex;flex-direction:column;gap:14px;">'+
+        mensagemFieldHtml('msg-orcamento-input', 'Ao enviar um orçamento', c.templateOrcamento, DEFAULT_TEMPLATE_ORCAMENTO, ['cliente','numero','maquina','maquinaTexto','valor','validade','empresa'])+
+        mensagemFieldHtml('msg-os-input', 'Ao enviar o PDF de uma OS', c.templateOS, DEFAULT_TEMPLATE_OS, ['cliente','numero','maquina','maquinaTexto','valor','empresa'])+
+        mensagemFieldHtml('msg-cobranca-input', 'Ao cobrar um recebimento em aberto', c.templateCobranca, DEFAULT_TEMPLATE_COBRANCA, ['cliente','numero','maquina','maquinaTexto','totalAberto','vencimento','empresa'])+
+        mensagemFieldHtml('msg-recibo-input', 'Ao gerar o recibo de um pagamento', c.templateRecibo, DEFAULT_TEMPLATE_RECIBO, ['cliente','numero','maquina','maquinaTexto','valor','data','empresa'])+
+        '<button type="submit" class="btn primary sm" style="align-self:flex-start;">Salvar mensagens</button>'+
+      '</form>'+
+    '</div></div>';
+  }
+  function renderPixPanel(){
+    var c = DB.config;
+    return '<div class="panel"><div class="panel-head"><h2>💳 Dados para pagamento (Pix)</h2></div><div class="panel-body">'+
+      '<div class="hint" style="margin-bottom:12px;">Preenchendo aqui, esses dados aparecem automaticamente no PDF de cobrança enviado pro cliente (fica em branco se você deixar algum campo vazio).</div>'+
+      '<form id="form-pix" style="display:flex;flex-direction:column;gap:14px;">'+
+        '<div class="field"><label>Chave Pix</label><input type="text" id="pix-chave-input" value="'+esc(c.pixChave||"")+'" placeholder="CPF/CNPJ, e-mail, telefone ou chave aleatória"></div>'+
+        '<div class="field"><label>Banco</label><input type="text" id="pix-banco-input" value="'+esc(c.pixBanco||"")+'" placeholder="Ex.: Banco do Brasil"></div>'+
+        '<div class="field"><label>Nome do titular</label><input type="text" id="pix-titular-input" value="'+esc(c.pixTitular||"")+'" placeholder="Nome de quem recebe"></div>'+
+        '<button type="submit" class="btn primary sm" style="align-self:flex-start;">Salvar dados de pagamento</button>'+
+      '</form>'+
+    '</div></div>';
+  }
+
+  /* ---------------- LIXEIRA (itens excluídos, recuperáveis por 30 dias) ---------------- */
+  var LIXEIRA_TIPO_META = {
+    clientes:{icon:'👤', label:'Cliente'}, orcamentos:{icon:'📝', label:'Orçamento'},
+    pagamentos:{icon:'💰', label:'Recebimento'}, nf:{icon:'🧾', label:'Nota fiscal'},
+    fornecedores:{icon:'🏭', label:'Fornecedor'}, despesas:{icon:'📉', label:'Despesa'},
+    produtos:{icon:'📦', label:'Produto/Serviço'}
+  };
+  function lixeiraDescreverItem(tipo, r){
+    if(tipo==='clientes') return {titulo:r.nome||'(sem nome)', subtitulo:r.telefone||''};
+    if(tipo==='orcamentos') return {titulo:(r.numero||'')+' — '+(r.clienteNome||''), subtitulo:money(itemsTotal(r.itensServico)-(Number(r.desconto)||0))};
+    if(tipo==='pagamentos'){
+      var os = findOS(r.osId);
+      return {titulo:money(r.valor)+' · vencimento '+dateBR(r.vencimento), subtitulo: os? 'OS '+os.numero+' — '+(os.clienteNome||'') : ''};
+    }
+    if(tipo==='nf') return {titulo:'NF '+(r.numero||'sem número'), subtitulo:dateBR(r.dataEmissao)};
+    if(tipo==='fornecedores') return {titulo:r.nome||'(sem nome)', subtitulo:r.telefone||''};
+    if(tipo==='despesas') return {titulo:r.descricao||'(sem descrição)', subtitulo:money(r.valor)};
+    if(tipo==='produtos') return {titulo:r.nome||'(sem nome)', subtitulo:(r.tipo==='servico'?'Serviço':'Produto')};
+    return {titulo:r.id, subtitulo:''};
+  }
+  function renderLixeira(){
+    var itens = [];
+    LIXEIRA_TIPOS.forEach(function(tipo){
+      loadList(tipo).forEach(function(r){
+        if(!r.deletedEm) return;
+        itens.push(Object.assign({tipo:tipo, rec:r}, lixeiraDescreverItem(tipo, r)));
+      });
+    });
+    if(!itens.length) return emptyState("🗑️","A lixeira está vazia","Itens excluídos (clientes, orçamentos, recebimentos, NF, despesas, fornecedores e produtos) ficam aqui por "+LIXEIRA_DIAS+" dias, prontos para restaurar caso tenha sido engano.");
+    itens.sort(function(a,b){ return (b.rec.deletedEm||'').localeCompare(a.rec.deletedEm||''); });
+    return '<div class="hint" style="margin-bottom:12px;">Itens excluídos ficam aqui por '+LIXEIRA_DIAS+' dias e depois são apagados definitivamente. Clique em Restaurar para trazer de volta.</div>'+
+      '<div class="rec-list">'+itens.map(function(it){
+        var meta = LIXEIRA_TIPO_META[it.tipo];
+        var diasPassados = (Date.now() - new Date(it.rec.deletedEm).getTime())/86400000;
+        var diasRestantes = Math.max(0, Math.ceil(LIXEIRA_DIAS - diasPassados));
+        var quem = it.rec.ultimaAlteracaoPor;
+        return '<div class="rec-card"><div class="rec-top"><div><div class="rec-title">'+meta.icon+' '+esc(it.titulo)+'</div><div class="rec-num">'+esc(meta.label)+(it.subtitulo? ' · '+esc(it.subtitulo) : '')+'</div></div></div>'+
+          '<div class="rec-meta"><span>Excluído '+esc(dateBR(it.rec.deletedEm.slice(0,10)))+(quem? ' por '+esc(quem) : '')+'</span><span>'+(diasRestantes<=0? 'será removido em breve' : 'restam '+diasRestantes+' dia(s)')+'</span></div>'+
+          '<div class="actions-row"><button type="button" class="btn sm primary no-print" data-restore-lixeira="'+it.tipo+'|'+it.rec.id+'">↩️ Restaurar</button></div></div>';
+      }).join('')+'</div>';
   }
   document.getElementById('form-config').addEventListener('submit', function(e){
     e.preventDefault();
@@ -3594,7 +4340,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
      jsPDF itself fails or that capability is unavailable - see doPrint(). */
   function pdfAddLogo(doc, pageW, topY){
     try{
-      var logoH = 19, logoW = logoH * (752/422);
+      var logoH = 19, logoW = logoH * (2241/894);
       doc.addImage('data:image/png;base64,'+LOGO_FULL_B64, 'PNG', pageW-15-logoW, topY, logoW, logoH);
       return topY + logoH + 6;
     }catch(e){ return topY; }
@@ -3604,7 +4350,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
        gets cropped or screenshotted - the items table up top, or just the
        lower half - still carries a visible HidrauMiller mark. */
     try{
-      var wmW = pageW*0.52, wmH = wmW*(422/752);
+      var wmW = pageW*0.52, wmH = wmW*(894/2241);
       var useGState = doc.saveGraphicsState && doc.GState && doc.setGState;
       if(useGState){ doc.saveGraphicsState(); doc.setGState(new doc.GState({opacity:0.1})); }
       [0.30, 0.78].forEach(function(centerPct){
@@ -3829,7 +4575,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       doc.setFontSize(10.5); doc.setFont(undefined,'normal');
       y += 8;
     }
-    var cols = [ {label:'Comprado', w:24, align:'center'}, {label:'Item', w:96, align:'left'}, {label:'Qtd', w:20, align:'center'}, {label:'Custo est.', w:40, align:'right'} ];
+    var cols = [ {label:'Status', w:30, align:'center'}, {label:'Item', w:76, align:'left'}, {label:'Qtd', w:16, align:'center'}, {label:'Estoque', w:16, align:'center'}, {label:'Custo est.', w:42, align:'right'} ];
     function colX(idx){ var x=left; for(var i=0;i<idx;i++) x+=cols[i].w; return x; }
     doc.setFillColor(32,70,35); doc.rect(left, y-5, right-left, 7, 'F');
     doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(9.5);
@@ -3839,27 +4585,498 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     });
     doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
     y += 6.5;
+    var statusLabelCurto = {estoque:'Em estoque', comprado:'Comprado', comprar:'A comprar'};
     (o.listaCompras||[]).forEach(function(it){
       if(y > pageH-25){ doc.addPage(); y = 15; }
-      doc.text(it.comprado? 'X' : '', colX(0)+cols[0].w/2, y+3, {align:'center'});
+      var st = compraStatus(it);
+      doc.text(statusLabelCurto[st.key]||'', colX(0)+cols[0].w/2, y+3, {align:'center'});
       doc.text(String(it.desc||''), colX(1)+2, y+3);
       doc.text(String(it.qtd!=null?it.qtd:''), colX(2)+cols[2].w/2, y+3, {align:'center'});
+      doc.text(String(Number(it.qtdEstoque)||0), colX(3)+cols[3].w/2, y+3, {align:'center'});
       var mp = moneyParts(it.valor);
-      doc.text(mp.symbol, colX(3)+2, y+3);
-      doc.text(mp.number, colX(3)+cols[3].w-2, y+3, {align:'right'});
+      doc.text(mp.symbol, colX(4)+2, y+3);
+      doc.text(mp.number, colX(4)+cols[4].w-2, y+3, {align:'right'});
       doc.setDrawColor(220,220,220); doc.line(left, y+5, right, y+5);
       y += 7;
     });
     pdfAddPageNumbers(doc, pageW, pageH, right);
     return doc;
   }
-  function nativeSharePdf(doc, filenameBase){
+  // Cobrança em PDF, estilo "módulos": cada seção (itens da OS, pagamentos
+  // realizados, pagamentos em aberto, dados para pagamento) fica numa caixa
+  // arredondada com tinta clarinha própria. A altura de cada módulo é medida
+  // ANTES de desenhar, e a quebra de página (ensurePageFor) acontece sempre
+  // antes de abrir um módulo novo - nunca no meio de um.
+  // ---- paleta reduzida (verde/cinza da marca, vermelho só p/ pendência) ----
+  var PDF_GREEN_DARK = [32,70,35], PDF_GREEN_MED = [58,98,56];
+  var PDF_GRAY_INK = [69,74,61], PDF_GRAY_TEXT = [100,104,90];
+  var PDF_TINT_GRAY = [246,246,241], PDF_BORDER_GRAY = [223,220,207];
+  var PDF_TINT_GREEN = [237,242,233], PDF_BORDER_GREEN = [204,217,197];
+  var PDF_RED_DARK = [92,28,20], PDF_TINT_RED = [252,235,231], PDF_BORDER_RED = [237,196,186], PDF_RED_TEXT = [150,55,42];
+  function buildCobrancaPdf(o, itens, atrasados, futuros, totalItens, totalCobrado){
+    var c = DB.config;
+    var doc = new window.jspdf.jsPDF({unit:'mm', format:'a4', compress:true});
+    var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    var left = 15, right = pageW-15, y = 15;
+    var PAD = 5;
+    doc.setFontSize(10.5);
+    var logoBottom = pdfAddLogo(doc, pageW, y);
+
+    var bannerW = 60, bannerH = 14;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, bannerW, bannerH, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(15); doc.setTextColor(255,255,255);
+    doc.text('COBRANÇA', left+7, y+9.3);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+    y = Math.max(logoBottom, y+bannerH+9);
+
+    doc.text((c.cidade? c.cidade+', ' : '') + dateExtenso(todayISO()), left, y); y += 7;
+    pdfLabeledLine(doc, left, y, 'Cliente:', o.clienteNome); y += 8;
+    // Número da OS em destaque (badge), não como mais uma linha de texto comum -
+    // é a referência que o cliente mais precisa achar rápido na cobrança.
+    doc.setFont(undefined,'bold'); doc.setFontSize(11);
+    var osTxt = String(o.numero||'');
+    var osW = doc.getTextWidth(osTxt), osBadgeW = osW+14, osBadgeH = 8.5;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y-6, osBadgeW, osBadgeH, osBadgeH/2, osBadgeH/2, 'F');
+    doc.setTextColor(255,255,255);
+    doc.text(osTxt, left+7, y-0.2);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+    y += 9;
+    pdfLabeledLine(doc, left, y, 'Forma de pagamento acordada:', formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):"—"); y += 8;
+    // Máquina + Título/Assunto combinados numa única faixa - se só um dos
+    // dois estiver preenchido, mostra só ele (ex.: serviço avulso sem
+    // máquina cadastrada ainda precisa de uma faixa identificando do que
+    // se trata). Quebra em 2 linhas se o texto combinado não couber.
+    var maqTituloTxt = o.maquina && o.titulo ? (o.maquina+' — '+o.titulo) : (o.maquina || o.titulo || '');
+    if(maqTituloTxt){
+      doc.setFont(undefined,'bold'); doc.setFontSize(11);
+      var maqLines = doc.splitTextToSize(String(maqTituloTxt).toUpperCase(), (right-left)-16);
+      var maqBannerH = 9.5 + Math.max(0, maqLines.length-1)*5.5;
+      doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.roundedRect(left, y, right-left, maqBannerH, 2.2, 2.2, 'F');
+      doc.setTextColor(255,255,255);
+      doc.text(maqLines, pageW/2, y+6.6, {align:'center'});
+      doc.setFontSize(10.5); doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+      y += maqBannerH + 7;
+    }
+
+    function ensurePageFor(h){
+      if(y + h > pageH - 25){ doc.addPage(); y = 15; }
+    }
+    // titleFontSize/borderWidth opcionais - usados pra dar mais ou menos
+    // destaque a uma seção (ex.: atrasados maior/mais forte, itens menor).
+    // Escala enxuta de propósito (poucos tamanhos no documento inteiro) -
+    // destaque vem de cor/peso/borda, não de variar fonte demais por seção.
+    function moduleBox(titleColor, tintRGB, borderRGB, title, contentH, titleFontSize, borderWidth){
+      titleFontSize = titleFontSize || 11;
+      borderWidth = borderWidth || 0.3;
+      var headerH = titleFontSize > 11 ? 11 : 8;
+      var boxH = headerH + contentH + PAD;
+      ensurePageFor(boxH);
+      doc.setDrawColor(borderRGB[0], borderRGB[1], borderRGB[2]);
+      doc.setFillColor(tintRGB[0], tintRGB[1], tintRGB[2]);
+      doc.setLineWidth(borderWidth);
+      doc.roundedRect(left, y, right-left, boxH, 2.5, 2.5, 'FD');
+      doc.setFont(undefined,'bold'); doc.setFontSize(titleFontSize); doc.setTextColor(titleColor[0], titleColor[1], titleColor[2]);
+      doc.text(title, left+PAD, y + (titleFontSize > 11 ? 8.5 : 7));
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5); doc.setLineWidth(0.35);
+      var yContentStart = y + headerH + 4;
+      y = y + boxH + 7;
+      return yContentStart;
+    }
+
+    // ---- Itens da OS ----
+    if(itens && itens.length){
+      var colsItens = [ {label:'DESCRIÇÃO', w:88, align:'left'}, {label:'QTDE.', w:18, align:'center'}, {label:'VALOR UNIT.', w:27, align:'right'}, {label:'SUBTOTAL', w:27, align:'right'} ];
+      var colXItens = function(idx){ var x=left+PAD; for(var i=0;i<idx;i++) x+=colsItens[i].w; return x; };
+      var itensRowH = itens.map(function(it){
+        var descLines = doc.splitTextToSize(String(it.desc||''), colsItens[0].w-4);
+        return Math.max(6, descLines.length*4.2+2);
+      });
+      var itensContentH = 7 + itensRowH.reduce(function(s,h){return s+h;},0) + 9;
+      // Seção de menor destaque nesse documento (o que importa aqui é o
+      // atrasado + o total, não o detalhe dos itens) - de-ênfase por cor e
+      // borda fina, texto no mesmo tamanho-base do resto do corpo do PDF.
+      var ty = moduleBox(PDF_GRAY_INK, PDF_TINT_GRAY, PDF_BORDER_GRAY, 'Itens da OS', itensContentH, 11, 0.3);
+      doc.setFont(undefined,'bold'); doc.setFontSize(8.5); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      colsItens.forEach(function(col,i){
+        var x = colXItens(i) + (col.align==='right'? col.w-2 : col.align==='center'? col.w/2 : 0);
+        doc.text(col.label, x, ty, {align: col.align==='left'?'left':col.align});
+      });
+      doc.setDrawColor(200,197,183); doc.line(left+PAD, ty+2, right-PAD, ty+2);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      ty += 6;
+      itens.forEach(function(it, idx){
+        var descLines = doc.splitTextToSize(String(it.desc||''), colsItens[0].w-4);
+        var qtd = Number(it.qtd)||0, valor = Number(it.valor)||0;
+        doc.text(descLines, colXItens(0), ty+3);
+        doc.text(String(qtd), colXItens(1)+colsItens[1].w/2, ty+3, {align:'center'});
+        doc.text(money(valor), colXItens(2)+colsItens[2].w-2, ty+3, {align:'right'});
+        doc.text(money(qtd*valor), colXItens(3)+colsItens[3].w-2, ty+3, {align:'right'});
+        ty += itensRowH[idx];
+      });
+      ty += 2;
+      doc.setDrawColor(200,197,183); doc.line(left+PAD, ty, right-PAD, ty);
+      ty += 5;
+      doc.setFont(undefined,'bold'); doc.setFontSize(9.5); doc.setTextColor(PDF_GRAY_INK[0],PDF_GRAY_INK[1],PDF_GRAY_INK[2]);
+      doc.text('Total dos itens: '+money(totalItens), right-PAD, ty, {align:'right'});
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+    }
+
+    // ---- Pagamentos atrasados — cobrados agora, com o total já dentro do
+    // mesmo cartão. É o assunto principal deste documento, então em vez de
+    // repetir "atrasados" num quadro e "total" num banner separado logo
+    // abaixo (o que deixava 2 barras verdes de alturas diferentes soltas
+    // no documento), o total agora é uma barra verde encaixada dentro do
+    // próprio cartão vermelho, como o "resultado" direto daquela soma. ----
+    var colsAbertos = [ {label:'PARCELA', w:38, align:'left'}, {label:'VENCIMENTO', w:28, align:'center'}, {label:'STATUS', w:24, align:'center'}, {label:'VALOR', w:30, align:'right'}, {label:'SALDO', w:30, align:'right'} ];
+    var colXAbertos = function(idx){ var x=left+PAD; for(var i=0;i<idx;i++) x+=colsAbertos[i].w; return x; };
+    var headerH3 = 11; // moduleBox usa 11 quando titleFontSize>11 (aqui 12.5)
+    var contentStartOffset = headerH3 + 4;
+    var rowsAreaH = 7 + atrasados.length*8;
+    var contentEndOffset = contentStartOffset + rowsAreaH;
+    var totalGap = 6, totalBarH = 14, bottomPad = 6;
+    var boxH3 = contentEndOffset + totalGap + totalBarH + bottomPad;
+    ensurePageFor(boxH3);
+    var cardTop = y;
+    doc.setDrawColor(PDF_BORDER_RED[0],PDF_BORDER_RED[1],PDF_BORDER_RED[2]);
+    doc.setFillColor(PDF_TINT_RED[0],PDF_TINT_RED[1],PDF_TINT_RED[2]);
+    doc.setLineWidth(0.55);
+    doc.roundedRect(left, cardTop, right-left, boxH3, 2.5, 2.5, 'FD');
+    doc.setFont(undefined,'bold'); doc.setFontSize(12.5); doc.setTextColor(PDF_RED_DARK[0],PDF_RED_DARK[1],PDF_RED_DARK[2]);
+    doc.text('Pagamentos atrasados — cobrados agora', left+PAD, cardTop+8.5);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5); doc.setLineWidth(0.35);
+    var ty3 = cardTop + contentStartOffset;
+    doc.setFont(undefined,'bold'); doc.setFontSize(8.5); doc.setTextColor(PDF_RED_TEXT[0],PDF_RED_TEXT[1],PDF_RED_TEXT[2]);
+    colsAbertos.forEach(function(col,i){
+      var x = colXAbertos(i) + (col.align==='right'? col.w-2 : col.align==='center'? col.w/2 : 0);
+      doc.text(col.label, x, ty3, {align: col.align==='left'?'left':col.align});
+    });
+    doc.setDrawColor(PDF_BORDER_RED[0],PDF_BORDER_RED[1],PDF_BORDER_RED[2]); doc.line(left+PAD, ty3+2, right-PAD, ty3+2);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+    ty3 += 7;
+    atrasados.forEach(function(p){
+      var pago=Number(p.valorPago)||0, valor=Number(p.valor)||0, saldo = Math.max(0, valor-pago);
+      doc.text(pagamentoParcelaLabel(p), colXAbertos(0), ty3+3);
+      doc.text(dateBR(p.vencimento), colXAbertos(1)+colsAbertos[1].w/2, ty3+3, {align:'center'});
+      doc.text(pagStatusOf(p).label, colXAbertos(2)+colsAbertos[2].w/2, ty3+3, {align:'center'});
+      doc.text(money(valor), colXAbertos(3)+colsAbertos[3].w-2, ty3+3, {align:'right'});
+      doc.setFont(undefined,'bold'); doc.setTextColor(PDF_RED_DARK[0],PDF_RED_DARK[1],PDF_RED_DARK[2]);
+      doc.text(money(saldo), colXAbertos(4)+colsAbertos[4].w-2, ty3+3, {align:'right'});
+      doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+      doc.setDrawColor(240,225,220); doc.line(left+PAD, ty3+5.5, right-PAD, ty3+5.5);
+      ty3 += 8;
+    });
+    var totalBarY = ty3 + totalGap;
+    var totalInset = 4;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left+totalInset, totalBarY, (right-left)-totalInset*2, totalBarH, 2.2, 2.2, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(14); doc.setTextColor(255,255,255);
+    doc.text('Total a cobrar agora: '+money(totalCobrado), left+totalInset+6, totalBarY+9.3);
+    doc.setFont(undefined,'normal'); doc.setFontSize(10.5); doc.setTextColor(0,0,0);
+    y = cardTop + boxH3 + 9;
+
+    // ---- Dados para pagamento (Pix) - texto simples, sem caixa, discreto -
+    // só aparece se algo estiver preenchido ----
+    if(c.pixChave || c.pixBanco || c.pixTitular){
+      doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.text('Dados para pagamento', left, y);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      y += 6.5;
+      if(c.pixChave){ pdfLabeledLine(doc, left, y, 'Chave Pix:', c.pixChave); y += 5.5; }
+      if(c.pixBanco){ pdfLabeledLine(doc, left, y, 'Banco:', c.pixBanco); y += 5.5; }
+      if(c.pixTitular){ pdfLabeledLine(doc, left, y, 'Titular:', c.pixTitular); y += 5.5; }
+      doc.setFontSize(10.5);
+      y += 4;
+    }
+
+    // ---- Próximos pagamentos — só para ciência, não estão nesta cobrança ----
+    if(futuros && futuros.length){
+      var totalFuturo = futuros.reduce(function(s,p){ return s+Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
+      var colsFut = [ {label:'PARCELA', w:38, align:'left'}, {label:'VENCIMENTO', w:28, align:'center'}, {label:'STATUS', w:24, align:'center'}, {label:'VALOR', w:30, align:'right'}, {label:'SALDO', w:30, align:'right'} ];
+      var colXFut = function(idx){ var x=left+PAD; for(var i=0;i<idx;i++) x+=colsFut[i].w; return x; };
+      var futContentH = 7 + futuros.length*7 + 2;
+      var boxH2 = 8 + futContentH + PAD;
+      ensurePageFor(boxH2);
+      doc.setDrawColor(PDF_BORDER_GRAY[0],PDF_BORDER_GRAY[1],PDF_BORDER_GRAY[2]);
+      doc.setFillColor(PDF_TINT_GRAY[0],PDF_TINT_GRAY[1],PDF_TINT_GRAY[2]);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(left, y, right-left, boxH2, 2.5, 2.5, 'FD');
+      doc.setFont(undefined,'bold'); doc.setFontSize(11); doc.setTextColor(PDF_GRAY_INK[0],PDF_GRAY_INK[1],PDF_GRAY_INK[2]);
+      doc.text('Próximos pagamentos — só para ciência, não estão nesta cobrança', left+PAD, y+7);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      var ty4 = y+12;
+      y = y + boxH2 + 7;
+
+      doc.setFont(undefined,'bold'); doc.setFontSize(8.5); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      colsFut.forEach(function(col,i){
+        var x = colXFut(i) + (col.align==='right'? col.w-2 : col.align==='center'? col.w/2 : 0);
+        doc.text(col.label, x, ty4, {align: col.align==='left'?'left':col.align});
+      });
+      doc.setDrawColor(PDF_BORDER_GRAY[0],PDF_BORDER_GRAY[1],PDF_BORDER_GRAY[2]); doc.line(left+PAD, ty4+2, right-PAD, ty4+2);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      ty4 += 6;
+      futuros.forEach(function(p){
+        var pago=Number(p.valorPago)||0, valor=Number(p.valor)||0, saldo = Math.max(0, valor-pago);
+        doc.text(pagamentoParcelaLabel(p), colXFut(0), ty4+3);
+        doc.text(dateBR(p.vencimento), colXFut(1)+colsFut[1].w/2, ty4+3, {align:'center'});
+        doc.text(pagStatusOf(p).label, colXFut(2)+colsFut[2].w/2, ty4+3, {align:'center'});
+        doc.text(money(valor), colXFut(3)+colsFut[3].w-2, ty4+3, {align:'right'});
+        doc.text(money(saldo), colXFut(4)+colsFut[4].w-2, ty4+3, {align:'right'});
+        doc.setDrawColor(232,232,224); doc.line(left+PAD, ty4+5, right-PAD, ty4+5);
+        ty4 += 7;
+      });
+      doc.setFont(undefined,'italic'); doc.setFontSize(9.5); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      doc.text('Total a vencer (informativo, não incluso no valor cobrado): '+money(totalFuturo), right-PAD, ty4+2, {align:'right'});
+      doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0); doc.setFontSize(10.5);
+    }
+
+    pdfAddPageNumbers(doc, pageW, pageH, right);
+    return doc;
+  }
+  // Recibo de um único pagamento já quitado - prova de quitação, não um
+  // extrato de cobrança (por isso não lista outras parcelas nem itens da OS,
+  // só os dados desse recebimento específico).
+  function buildReciboPdf(p, o, clienteNome){
+    var c = DB.config;
+    var doc = new window.jspdf.jsPDF({unit:'mm', format:'a4', compress:true});
+    var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    var left = 15, right = pageW-15, y = 15;
+    doc.setFontSize(10.5);
+    var logoBottom = pdfAddLogo(doc, pageW, y);
+
+    var bannerW = 45, bannerH = 14;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, bannerW, bannerH, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(15); doc.setTextColor(255,255,255);
+    doc.text('RECIBO', left+7, y+9.3);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+    y = Math.max(logoBottom, y+bannerH+9);
+
+    doc.text((c.cidade? c.cidade+', ' : '') + dateExtenso(todayISO()), left, y); y += 7;
+    pdfLabeledLine(doc, left, y, 'Cliente:', clienteNome); y += 8;
+    if(o){
+      doc.setFont(undefined,'bold'); doc.setFontSize(11);
+      var osTxt = String(o.numero||'');
+      var osW = doc.getTextWidth(osTxt), osBadgeW = osW+14, osBadgeH = 8.5;
+      doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.roundedRect(left, y-6, osBadgeW, osBadgeH, osBadgeH/2, osBadgeH/2, 'F');
+      doc.setTextColor(255,255,255);
+      doc.text(osTxt, left+7, y-0.2);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+      y += 9;
+    }
+    // Máquina + Título/Assunto combinados (mesma lógica da Cobrança) - só um
+    // dos dois aparece se o outro não estiver preenchido.
+    var maqTituloTxtR = o && (o.maquina && o.titulo ? (o.maquina+' — '+o.titulo) : (o.maquina || o.titulo || ''));
+    if(maqTituloTxtR){
+      doc.setFont(undefined,'bold'); doc.setFontSize(11);
+      var maqLinesR = doc.splitTextToSize(String(maqTituloTxtR).toUpperCase(), (right-left)-16);
+      var maqBannerH = 9.5 + Math.max(0, maqLinesR.length-1)*5.5;
+      doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.roundedRect(left, y, right-left, maqBannerH, 2.2, 2.2, 'F');
+      doc.setTextColor(255,255,255);
+      doc.text(maqLinesR, pageW/2, y+6.6, {align:'center'});
+      doc.setFontSize(10.5); doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+      y += maqBannerH + 7;
+    }
+
+    pdfLabeledLine(doc, left, y, 'Parcela:', pagamentoParcelaLabel(p)); y += 6;
+    pdfLabeledLine(doc, left, y, 'Forma de pagamento:', p.forma||'—'); y += 6;
+    pdfLabeledLine(doc, left, y, 'Data do pagamento:', dateBR(p.dataPagamento)); y += 10;
+
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, right-left, 14, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(12.5); doc.setTextColor(255,255,255);
+    doc.text('Valor recebido: '+money(p.valor), left+7, y+9);
+    doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0); doc.setFontSize(10.5);
+    y += 14 + 10;
+
+    var declaracao = 'Recebemos de '+String(clienteNome||'')+' a quantia de '+money(p.valor)+
+      (o? ' referente à '+String(o.numero||'') : '')+', pago em '+dateBR(p.dataPagamento)+' via '+String(p.forma||'—')+'.';
+    var linhas = doc.splitTextToSize(declaracao, right-left);
+    doc.setTextColor(69,74,61);
+    doc.text(linhas, left, y);
+    y += linhas.length*5.5 + 28;
+    doc.setTextColor(0,0,0);
+
+    if(y > pageH-35){ doc.addPage(); y = 30; }
+    doc.setDrawColor(150,150,140); doc.setLineWidth(0.3);
+    doc.line(left, y, left+80, y);
+    doc.setFontSize(9.5);
+    doc.text(String(c.nome||'HidrauMiller')+(c.cnpj? ' — '+c.cnpj : ''), left, y+5);
+
+    pdfAddPageNumbers(doc, pageW, pageH, right);
+    return doc;
+  }
+  // Cobrança consolidada: junta as parcelas em aberto de VÁRIAS OS do mesmo
+  // cliente num único PDF. Só as atrasadas entram no total cobrado agora;
+  // as que ainda não venceram aparecem numa seção separada, só para ciência
+  // (não somam no valor cobrado). Cada linha identifica a OS e o orçamento
+  // de origem, já que aqui não dá pra repetir Itens/Pagamentos por OS (foi
+  // testado e a cliente achou pouco prático) nem mostrar título/máquina
+  // (poluía a tabela) - ver decisões no fio da conversa sobre esse recurso.
+  function buildCobrancaConsolidadaPdf(clienteNome, numOS, atrasadas, futuras){
+    var c = DB.config;
+    var doc = new window.jspdf.jsPDF({unit:'mm', format:'a4', compress:true});
+    var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    var left = 15, right = pageW-15, y = 15;
+    var PAD = 5;
+    doc.setFontSize(10.5);
+    var logoBottom = pdfAddLogo(doc, pageW, y);
+
+    var bannerW = 60, bannerH = 14;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, bannerW, bannerH, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(15); doc.setTextColor(255,255,255);
+    doc.text('COBRANÇA', left+7, y+9.3);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+    y = Math.max(logoBottom, y+bannerH+9);
+
+    doc.text((c.cidade? c.cidade+', ' : '') + dateExtenso(todayISO()), left, y); y += 7;
+    pdfLabeledLine(doc, left, y, 'Cliente:', clienteNome); y += 9;
+
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, right-left, 14, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(12.5); doc.setTextColor(255,255,255);
+    doc.text('Cobrança consolidada — '+numOS+' ordens de serviço com pendência', left+7, y+9);
+    doc.setFont(undefined,'normal'); doc.setFontSize(10.5); doc.setTextColor(0,0,0);
+    y += 14 + 9;
+
+    function ensurePageFor(h){
+      if(y + h > pageH - 25){ doc.addPage(); y = 15; }
+    }
+
+    var temParcial = atrasadas.some(function(p){ return (Number(p.pago)||0) > 0; });
+    var totalAtrasado = atrasadas.reduce(function(s,p){ return s+Math.max(0,(Number(p.valor)||0)-(Number(p.pago)||0)); },0);
+    var totalFuturo = futuras.reduce(function(s,p){ return s+(Number(p.valor)||0); },0);
+
+    // ================= Parcelas atrasadas =================
+    var colsAtr = temParcial
+      ? [ {label:'OS', w:24, align:'left'}, {label:'ORÇAMENTO', w:28, align:'left'}, {label:'PARCELA', w:21, align:'left'}, {label:'VENCIMENTO', w:22, align:'center'}, {label:'VALOR', w:24, align:'right'}, {label:'PAGO', w:24, align:'right'}, {label:'SALDO', w:24, align:'right'} ]
+      : [ {label:'OS', w:26, align:'left'}, {label:'ORÇAMENTO', w:30, align:'left'}, {label:'PARCELA', w:28, align:'left'}, {label:'VENCIMENTO', w:26, align:'center'}, {label:'VALOR', w:28, align:'right'} ];
+    var colXAtr = function(idx){ var x=left+PAD; for(var i=0;i<idx;i++) x+=colsAtr[i].w; return x; };
+
+    var contentHAtr = 7 + atrasadas.length*7 + 2;
+    var boxH = 8 + contentHAtr + PAD;
+    ensurePageFor(boxH);
+    doc.setDrawColor(PDF_BORDER_RED[0],PDF_BORDER_RED[1],PDF_BORDER_RED[2]);
+    doc.setFillColor(PDF_TINT_RED[0],PDF_TINT_RED[1],PDF_TINT_RED[2]);
+    doc.setLineWidth(0.35);
+    doc.roundedRect(left, y, right-left, boxH, 2.5, 2.5, 'FD');
+    doc.setFont(undefined,'bold'); doc.setFontSize(10.5); doc.setTextColor(PDF_RED_DARK[0],PDF_RED_DARK[1],PDF_RED_DARK[2]);
+    doc.text('Parcelas atrasadas — valor cobrado agora', left+PAD, y+7);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+    var ty = y+12;
+    y = y + boxH + 7;
+
+    doc.setFont(undefined,'bold'); doc.setFontSize(8.3); doc.setTextColor(PDF_RED_TEXT[0],PDF_RED_TEXT[1],PDF_RED_TEXT[2]);
+    colsAtr.forEach(function(col,i){
+      var x = colXAtr(i) + (col.align==='right'? col.w-2 : col.align==='center'? col.w/2 : 0);
+      doc.text(col.label, x, ty, {align: col.align==='left'?'left':col.align});
+    });
+    doc.setDrawColor(PDF_BORDER_RED[0],PDF_BORDER_RED[1],PDF_BORDER_RED[2]); doc.line(left+PAD, ty+2, right-PAD, ty+2);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+    ty += 6;
+
+    atrasadas.forEach(function(p){
+      var pago = Number(p.pago)||0, valor = Number(p.valor)||0, saldo = Math.max(0, valor-pago);
+      doc.setFont(undefined,'bold'); doc.text(p.os, colXAtr(0), ty+3); doc.setFont(undefined,'normal');
+      doc.setFontSize(8.5); doc.text(p.orc||'—', colXAtr(1), ty+3); doc.setFontSize(9.5);
+      doc.text(p.label, colXAtr(2), ty+3);
+      doc.text(dateBR(p.vencimento), colXAtr(3)+colsAtr[3].w/2, ty+3, {align:'center'});
+      if(temParcial){
+        doc.text(money(valor), colXAtr(4)+colsAtr[4].w-2, ty+3, {align:'right'});
+        doc.text(pago>0?money(pago):'—', colXAtr(5)+colsAtr[5].w-2, ty+3, {align:'right'});
+        doc.setFont(undefined,'bold'); doc.setTextColor(PDF_RED_DARK[0],PDF_RED_DARK[1],PDF_RED_DARK[2]);
+        doc.text(money(saldo), colXAtr(6)+colsAtr[6].w-2, ty+3, {align:'right'});
+        doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+      } else {
+        doc.setFont(undefined,'bold'); doc.setTextColor(PDF_RED_DARK[0],PDF_RED_DARK[1],PDF_RED_DARK[2]);
+        doc.text(money(valor), colXAtr(4)+colsAtr[4].w-2, ty+3, {align:'right'});
+        doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+      }
+      doc.setDrawColor(240,225,220); doc.line(left+PAD, ty+5, right-PAD, ty+5);
+      ty += 7;
+    });
+
+    // ---- Total a cobrar agora ----
+    ensurePageFor(14);
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, right-left, 14, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(12.5); doc.setTextColor(255,255,255);
+    doc.text('Total a cobrar agora: '+money(totalAtrasado), left+7, y+9);
+    doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0);
+    y += 14 + 9;
+
+    // ---- Dados para pagamento ----
+    if(c.pixChave || c.pixBanco || c.pixTitular){
+      doc.setFont(undefined,'bold'); doc.setFontSize(10.5); doc.setTextColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.text('Dados para pagamento', left, y);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+      y += 6.5;
+      if(c.pixChave){ pdfLabeledLine(doc, left, y, 'Chave Pix:', c.pixChave); y += 6; }
+      if(c.pixBanco){ pdfLabeledLine(doc, left, y, 'Banco:', c.pixBanco); y += 6; }
+      if(c.pixTitular){ pdfLabeledLine(doc, left, y, 'Titular:', c.pixTitular); y += 6; }
+      y += 4;
+    }
+
+    // ================= Próximos pagamentos =================
+    if(futuras.length){
+      var colsFut = [ {label:'OS', w:26, align:'left'}, {label:'ORÇAMENTO', w:30, align:'left'}, {label:'PARCELA', w:28, align:'left'}, {label:'VENCIMENTO', w:26, align:'center'}, {label:'VALOR', w:28, align:'right'} ];
+      var colXFut = function(idx){ var x=left+PAD; for(var i=0;i<idx;i++) x+=colsFut[i].w; return x; };
+      var contentHFut = 7 + futuras.length*7 + 2;
+      var boxH2 = 8 + contentHFut + PAD;
+      ensurePageFor(boxH2);
+      doc.setDrawColor(PDF_BORDER_GRAY[0],PDF_BORDER_GRAY[1],PDF_BORDER_GRAY[2]);
+      doc.setFillColor(PDF_TINT_GRAY[0],PDF_TINT_GRAY[1],PDF_TINT_GRAY[2]);
+      doc.setLineWidth(0.35);
+      doc.roundedRect(left, y, right-left, boxH2, 2.5, 2.5, 'FD');
+      doc.setFont(undefined,'bold'); doc.setFontSize(10.5); doc.setTextColor(PDF_GRAY_INK[0],PDF_GRAY_INK[1],PDF_GRAY_INK[2]);
+      doc.text('Próximos pagamentos — só para ciência, não estão nesta cobrança', left+PAD, y+7);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      var ty2 = y+12;
+      y = y + boxH2 + 7;
+
+      doc.setFont(undefined,'bold'); doc.setFontSize(8.3); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      colsFut.forEach(function(col,i){
+        var x = colXFut(i) + (col.align==='right'? col.w-2 : col.align==='center'? col.w/2 : 0);
+        doc.text(col.label, x, ty2, {align: col.align==='left'?'left':col.align});
+      });
+      doc.setDrawColor(PDF_BORDER_GRAY[0],PDF_BORDER_GRAY[1],PDF_BORDER_GRAY[2]); doc.line(left+PAD, ty2+2, right-PAD, ty2+2);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9.5);
+      ty2 += 6;
+      futuras.forEach(function(p){
+        doc.setFont(undefined,'bold'); doc.text(p.os, colXFut(0), ty2+3); doc.setFont(undefined,'normal');
+        doc.setFontSize(8.5); doc.text(p.orc||'—', colXFut(1), ty2+3); doc.setFontSize(9.5);
+        doc.text(p.label, colXFut(2), ty2+3);
+        doc.text(dateBR(p.vencimento), colXFut(3)+colsFut[3].w/2, ty2+3, {align:'center'});
+        doc.text(money(Number(p.valor)||0), colXFut(4)+colsFut[4].w-2, ty2+3, {align:'right'});
+        doc.setDrawColor(232,232,224); doc.line(left+PAD, ty2+5, right-PAD, ty2+5);
+        ty2 += 7;
+      });
+      doc.setFont(undefined,'italic'); doc.setFontSize(8.5); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      doc.text('Total a vencer (informativo, não incluso no valor cobrado): '+money(totalFuturo), right-PAD, ty2+2, {align:'right'});
+      doc.setFont(undefined,'normal'); doc.setTextColor(0,0,0); doc.setFontSize(10.5);
+    }
+
+    pdfAddPageNumbers(doc, pageW, pageH, right);
+    return doc;
+  }
+  function nativeSharePdf(doc, filenameBase, shareText){
     var Filesystem = window.Capacitor.Plugins.Filesystem;
     var Share = window.Capacitor.Plugins.Share;
     var base64 = doc.output('datauristring').split(',')[1];
     var fileName = filenameBase.replace(/[^a-zA-Z0-9_-]+/g,'_')+'.pdf';
     return Filesystem.writeFile({ path: fileName, data: base64, directory: 'CACHE' }).then(function(res){
-      return Share.share({ title: filenameBase, url: res.uri, dialogTitle: 'Compartilhar PDF' });
+      // Manda o PDF e o texto padronizado JUNTOS num único compartilhamento -
+      // o menu do Android já lista WhatsApp normal e WhatsApp Business (se os
+      // dois estiverem instalados) como opções, cada um recebe o PDF anexado
+      // com esse texto como legenda, pronto pra escolher o contato e enviar.
+      var opts = { title: filenameBase, url: res.uri, dialogTitle: 'Compartilhar' };
+      if(shareText) opts.text = shareText;
+      return Share.share(opts);
     });
   }
   function printHtmlFallback(html){
@@ -3907,11 +5124,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       });
     }).catch(function(){ printHtmlFallback(htmlFallback); });
   }
-  function doPrint(html, pdfBuilder, filenameBase){
+  function doPrint(html, pdfBuilder, filenameBase, shareText){
     if(isNativeApp() && window.jspdf && pdfBuilder){
       try{
         var doc = pdfBuilder();
-        nativeSharePdf(doc, filenameBase||'documento').catch(function(err){
+        nativeSharePdf(doc, filenameBase||'documento', shareText).catch(function(err){
           if(err && err.message && err.message.indexOf('cancel')>=0) return; // user closed the share sheet - not an error
           customAlert('Não consegui gerar/compartilhar o PDF agora. Tente novamente.');
         });
@@ -3926,7 +5143,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     printHtmlFallback(html);
   }
-  function printOrcamento(id){
+  // No app nativo, o compartilhamento (doPrint) já manda PDF + texto juntos
+  // pro WhatsApp escolhido. No link web não tem como anexar arquivo por
+  // script, então esse fallback abre o WhatsApp com o texto pronto separado
+  // do download do PDF (que já acontece dentro do doPrint).
+  function abrirWhatsappWebFallback(cliente, msg){
+    if(isNativeApp()) return;
+    var link = cliente ? whatsappLink(cliente.telefone, msg) : null;
+    if(link){
+      var win = window.open(link, '_blank');
+      if(!win) customAlert('Gerei o PDF, mas não consegui abrir o WhatsApp automaticamente (bloqueio de pop-up). Abra manualmente: '+link);
+    } else {
+      customAlert('O PDF foi gerado, mas este cliente não tem telefone/WhatsApp cadastrado — não deu para abrir o WhatsApp automaticamente. Adicione o telefone no cadastro do cliente para isso funcionar da próxima vez.');
+    }
+  }
+  function printOrcamento(id, shareText){
     try{
       var o=findOrcamento(id); if(!o){ customAlert('Não encontrei esse orçamento — tente fechar e abrir de novo.'); return; }
       var opts = {
@@ -3937,13 +5168,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         formaPagamento: formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):""
       };
       var html = printDocument(opts);
-      doPrint(html, function(){ return buildDocumentPdf(opts); }, 'Orcamento_'+o.numero);
+      doPrint(html, function(){ return buildDocumentPdf(opts); }, 'Orcamento_'+o.numero, shareText);
     }catch(e){
       console.error('Falha ao montar PDF do orçamento:', e);
       customAlert('Não consegui gerar o PDF deste orçamento. Detalhe técnico: '+(e&&e.message?e.message:e));
     }
   }
-  function printOS(id){
+  function printOS(id, shareText){
     try{
       var o=findOS(id); if(!o){ customAlert('Não encontrei essa OS — tente fechar e abrir de novo.'); return; }
       var itens = (o.itens && o.itens.length) ? o.itens : [{desc:"Serviço executado", qtd:1, valor:o.valorTotal, tipo:"servico"}];
@@ -3953,23 +5184,277 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         extraLine:{label:"Status", value:OS_STATUS[o.status].label}, formaPagamento: formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):""
       };
       var html = printDocument(opts);
-      doPrint(html, function(){ return buildDocumentPdf(opts); }, 'OS_'+o.numero);
+      doPrint(html, function(){ return buildDocumentPdf(opts); }, 'OS_'+o.numero, shareText);
     }catch(e){
       console.error('Falha ao montar PDF da OS:', e);
       customAlert('Não consegui gerar o PDF desta OS. Detalhe técnico: '+(e&&e.message?e.message:e));
     }
   }
+  // "Gerar PDF da OS" (comprovante de serviço) - monta a mensagem padrão de
+  // OS (configurável em Empresa) com os dados dessa OS e já dispara o
+  // compartilhamento (PDF + texto no nativo; PDF + WhatsApp separado no web).
+  function enviarOSPdf(id){
+    var o = findOS(id); if(!o) return;
+    var cliente = findCliente(o.clienteId);
+    var msg = preencherTemplate(DB.config.templateOS || DEFAULT_TEMPLATE_OS, {
+      cliente: o.clienteNome||'', numero: o.numero, maquina: o.maquina||'',
+      maquinaTexto: o.maquina? ' para '+o.maquina : '', valor: money(o.valorTotal),
+      empresa: DB.config.nome||'HidrauMiller'
+    });
+    printOS(id, msg);
+    abrirWhatsappWebFallback(cliente, msg);
+  }
+  // "Cobrar" - gera um PDF de cobrança com os recebimentos ainda em aberto
+  // dessa OS (forma de pagamento acordada, vencimento, pago e saldo de cada
+  // um) e compartilha junto com a mensagem padrão (configurável em Empresa).
+  // Cobrança de uma única OS: segue a mesma regra da cobrança consolidada —
+  // só as parcelas atrasadas entram no valor cobrado agora; as que ainda não
+  // venceram (aberto/parcial) aparecem numa seção separada, só para ciência
+  // (não somam no total cobrado).
+  function enviarCobranca(osId){
+    var o = findOS(osId); if(!o) return;
+    var todosPagamentos = DB.pagamentos.filter(function(p){ return p.osId===o.id; });
+    var pendentes = todosPagamentos.filter(function(p){ return pagStatusKey(p)!=='pago'; })
+      .sort(function(a,b){ return (a.vencimento||'').localeCompare(b.vencimento||''); });
+    var atrasados = pendentes.filter(function(p){ return pagStatusKey(p)==='atrasado'; });
+    var futuros = pendentes.filter(function(p){ return pagStatusKey(p)!=='atrasado'; });
+    if(!atrasados.length){ toast('Não há parcelas atrasadas nesta OS.'); return; }
+    var totalCobrado = atrasados.reduce(function(s,p){ return s+Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
+    var totalFuturo = futuros.reduce(function(s,p){ return s+Math.max(0,(Number(p.valor)||0)-(Number(p.valorPago)||0)); },0);
+    var itens = (o.itens && o.itens.length) ? o.itens : [];
+    var totalItens = itens.reduce(function(s,it){ return s+(Number(it.qtd)||0)*(Number(it.valor)||0); },0);
+    var cliente = findCliente(o.clienteId);
+    var c = DB.config;
+
+    var itensHtml = '';
+    if(itens.length){
+      var itensRows = itens.map(function(it){
+        var qtd=Number(it.qtd)||0, valor=Number(it.valor)||0;
+        return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(it.desc||'')+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+qtd+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(valor)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(qtd*valor)+'</td></tr>';
+      }).join('');
+      itensHtml = '<div style="background:#f6f6f1;border:1px solid #dfdccf;border-radius:8px;padding:12px 14px;margin:14px 0;">'+
+        '<div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#767a6a;">Itens da OS</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="color:#767a6a;font-size:11px;"><th style="padding:6px;text-align:left;">Descrição</th><th style="padding:6px;">Qtde.</th><th style="padding:6px;text-align:right;">Valor unit.</th><th style="padding:6px;text-align:right;">Subtotal</th></tr>'+itensRows+'</table>'+
+        '<div style="text-align:right;font-size:12.5px;font-weight:700;margin-top:6px;color:#454e3d;">Total dos itens: '+money(totalItens)+'</div>'+
+        '</div>';
+    }
+
+    function abertosRowsHtml(list){
+      return list.map(function(p){
+        var pago=Number(p.valorPago)||0, valor=Number(p.valor)||0, saldo=Math.max(0,valor-pago);
+        return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(pagamentoParcelaLabel(p))+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+dateBR(p.vencimento)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+esc(pagStatusOf(p).label)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(valor)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;"><b>'+money(saldo)+'</b></td></tr>';
+      }).join('');
+    }
+    // Seção principal deste documento - caixa mais forte (borda grossa,
+    // título maior) porque é o que a cliente precisa ver primeiro. O total
+    // fica dentro do mesmo cartão, como uma barra verde encaixada logo
+    // abaixo da lista que ele soma - não é mais um banner solto à parte.
+    var atrasadosHtml = '<div style="background:#fceae7;border:2px solid #edc4ba;border-radius:10px;padding:14px 16px 16px;margin:14px 0;">'+
+      '<div style="font-size:15px;font-weight:800;margin-bottom:8px;color:#5c1c14;">Pagamentos atrasados — cobrados agora</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="color:#5c1c14;font-size:11px;"><th style="padding:8px;text-align:left;">Parcela</th><th style="padding:8px;">Vencimento</th><th style="padding:8px;">Status</th><th style="padding:8px;text-align:right;">Valor</th><th style="padding:8px;text-align:right;">Saldo</th></tr>'+abertosRowsHtml(atrasados)+'</table>'+
+      '<div style="margin-top:12px;background:#204623;color:#fff;font-weight:800;font-size:16px;padding:12px 16px;border-radius:8px;">Total a cobrar agora: '+money(totalCobrado)+'</div>'+
+      '</div>';
+
+    var futurosHtml = '';
+    if(futuros.length){
+      futurosHtml = '<div style="background:#f6f6f1;border:1px solid #dfdccf;border-radius:8px;padding:12px 14px;margin:18px 0 0;">'+
+        '<div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#454e3d;">Próximos pagamentos — só para ciência, não estão nesta cobrança</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="color:#454e3d;font-size:11px;"><th style="padding:6px;text-align:left;">Parcela</th><th style="padding:6px;">Vencimento</th><th style="padding:6px;">Status</th><th style="padding:6px;text-align:right;">Valor</th><th style="padding:6px;text-align:right;">Saldo</th></tr>'+abertosRowsHtml(futuros)+'</table>'+
+        '<div style="text-align:right;font-size:12.5px;font-style:italic;margin-top:6px;color:#64685a;">Total a vencer (informativo, não incluso no valor cobrado): '+money(totalFuturo)+'</div>'+
+        '</div>';
+    }
+
+    var pixHtml = '';
+    if(c.pixChave || c.pixBanco || c.pixTitular){
+      var pixItens = [];
+      if(c.pixChave) pixItens.push('<b>Chave Pix:</b> '+esc(c.pixChave));
+      if(c.pixBanco) pixItens.push('<b>Banco:</b> '+esc(c.pixBanco));
+      if(c.pixTitular) pixItens.push('<b>Titular:</b> '+esc(c.pixTitular));
+      pixHtml = '<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#204623;">Dados para pagamento</div>'+
+        '<div style="font-size:12.5px;line-height:1.6;color:#454a3d;">'+pixItens.join('<br>')+'</div>';
+    }
+
+    // Máquina + Título/Assunto combinados numa única faixa (mesma lógica do PDF).
+    var maqTituloHtml = o.maquina && o.titulo ? (esc(o.maquina)+' — '+esc(o.titulo)) : (o.maquina? esc(o.maquina) : (o.titulo? esc(o.titulo) : ''));
+
+    var dataLinha = (c.cidade? esc(c.cidade)+', ' : '') + esc(dateExtenso(todayISO()));
+    var html = printLogoBlock()+
+      '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:16px;letter-spacing:.03em;padding:9px 18px;border-radius:6px;margin-bottom:12px;">COBRANÇA</div>'+
+      '<div style="font-size:13px;margin-bottom:10px;">'+dataLinha+'</div>'+
+      '<div style="font-size:13px;margin-bottom:6px;"><b>Cliente:</b> '+esc(o.clienteNome)+'</div>'+
+      '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:13px;letter-spacing:.02em;padding:5px 12px;border-radius:4px;margin-bottom:8px;">'+esc(o.numero)+'</div>'+
+      '<div style="font-size:13px;margin-bottom:14px;"><b>Forma de pagamento acordada:</b> '+esc(formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):"—")+'</div>'+
+      (maqTituloHtml? '<div style="text-align:center;background:#204623;color:#fff;font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;padding:8px;border-radius:4px;margin-bottom:14px;">'+maqTituloHtml+'</div>' : '')+
+      itensHtml + atrasadosHtml +
+      pixHtml + futurosHtml;
+    var msg = preencherTemplate(DB.config.templateCobranca || DEFAULT_TEMPLATE_COBRANCA, {
+      cliente: o.clienteNome||'', numero: o.numero, maquina: o.maquina||'',
+      maquinaTexto: o.maquina? ' para '+o.maquina : '', totalAberto: money(totalCobrado),
+      vencimento: dateBR(atrasados[0].vencimento), empresa: c.nome||'HidrauMiller'
+    });
+    doPrint(html, function(){ return buildCobrancaPdf(o, itens, atrasados, futuros, totalItens, totalCobrado); }, 'Cobranca_'+o.numero, msg);
+    abrirWhatsappWebFallback(cliente, msg);
+  }
+  // Recibo de um pagamento específico - só pode ser gerado quando esse
+  // recebimento já está com status "pago" (é a prova de quitação daquele
+  // valor, não um extrato de cobrança). Por isso não entra mais na Cobrança:
+  // lá só interessa o que ainda está em aberto/atrasado.
+  function gerarReciboPagamento(pagId){
+    var p = DB.pagamentos.find(function(x){ return x.id===pagId; });
+    if(!p){ toast('Recebimento não encontrado.'); return; }
+    if(p.status!=='pago'){ toast('Só é possível gerar recibo de um recebimento já pago.'); return; }
+    var o = findOS(p.osId);
+    var cliente = o? findCliente(o.clienteId) : null;
+    var c = DB.config;
+    var clienteNome = o? o.clienteNome : (cliente? cliente.nome : '—');
+
+    // Máquina + Título/Assunto combinados numa única faixa (mesma lógica da Cobrança).
+    var maqTituloHtmlR = o && (o.maquina && o.titulo ? (esc(o.maquina)+' — '+esc(o.titulo)) : (o.maquina? esc(o.maquina) : (o.titulo? esc(o.titulo) : '')));
+
+    var dataLinha = (c.cidade? esc(c.cidade)+', ' : '') + esc(dateExtenso(todayISO()));
+    var html = printLogoBlock()+
+      '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:16px;letter-spacing:.03em;padding:9px 18px;border-radius:6px;margin-bottom:12px;">RECIBO</div>'+
+      '<div style="font-size:13px;margin-bottom:10px;">'+dataLinha+'</div>'+
+      '<div style="font-size:13px;margin-bottom:6px;"><b>Cliente:</b> '+esc(clienteNome)+'</div>'+
+      (o? '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:13px;letter-spacing:.02em;padding:5px 12px;border-radius:4px;margin-bottom:8px;">'+esc(o.numero)+'</div>' : '')+
+      (maqTituloHtmlR? '<div style="text-align:center;background:#204623;color:#fff;font-weight:700;font-size:13px;letter-spacing:.03em;text-transform:uppercase;padding:8px;border-radius:4px;margin:8px 0 14px;">'+maqTituloHtmlR+'</div>' : '')+
+      '<div style="font-size:13px;margin-bottom:2px;"><b>Parcela:</b> '+esc(pagamentoParcelaLabel(p))+'</div>'+
+      '<div style="font-size:13px;margin-bottom:2px;"><b>Forma de pagamento:</b> '+esc(p.forma||'—')+'</div>'+
+      '<div style="font-size:13px;margin-bottom:14px;"><b>Data do pagamento:</b> '+dateBR(p.dataPagamento)+'</div>'+
+      '<div style="background:#204623;color:#fff;font-weight:700;font-size:14px;padding:10px 14px;border-radius:6px;margin-bottom:14px;">Valor recebido: '+money(p.valor)+'</div>'+
+      '<div style="font-size:12.5px;line-height:1.6;color:#454e3d;">Recebemos de <b>'+esc(clienteNome)+'</b> a quantia de <b>'+money(p.valor)+'</b>'+(o? ' referente à '+esc(o.numero) : '')+', pago em '+dateBR(p.dataPagamento)+' via '+esc(p.forma||'—')+'.</div>'+
+      '<div style="margin-top:36px;font-size:12.5px;">_________________________________________<br>'+esc(c.nome||'HidrauMiller')+(c.cnpj? ' — '+esc(c.cnpj) : '')+'</div>';
+
+    var msg = preencherTemplate(DB.config.templateRecibo || DEFAULT_TEMPLATE_RECIBO, {
+      cliente: clienteNome||'', numero: o? o.numero : '', maquina: o&&o.maquina? o.maquina : '',
+      maquinaTexto: o&&o.maquina? ' para '+o.maquina : '', valor: money(p.valor),
+      data: dateBR(p.dataPagamento), empresa: c.nome||'HidrauMiller'
+    });
+    doPrint(html, function(){ return buildReciboPdf(p, o, clienteNome); }, 'Recibo_'+(o?o.numero:pagId), msg);
+    if(cliente) abrirWhatsappWebFallback(cliente, msg);
+  }
+  // Cobrança consolidada: reúne as parcelas em aberto de TODAS as OS do
+  // cliente. Só as atrasadas somam no valor cobrado; as que ainda não
+  // venceram só entram (seção separada, sem somar) se incluirFuturos=true.
+  function enviarCobrancaConsolidada(clienteId, incluirFuturos){
+    var cliente = findCliente(clienteId); if(!cliente) return;
+    var osDoCliente = DB.os.filter(function(x){ return x.clienteId===clienteId; });
+    var atrasadas = [], futuras = [], osIdsComAtraso = {};
+    osDoCliente.forEach(function(o){
+      var orc = findOrcamento(o.orcamentoOrigemId);
+      var orcNumero = orc ? orc.numero : '—';
+      DB.pagamentos.filter(function(p){ return p.osId===o.id; }).forEach(function(p){
+        var key = pagStatusKey(p);
+        if(key==='pago') return;
+        var item = { os:o.numero, orc:orcNumero, label:pagamentoParcelaLabel(p), vencimento:p.vencimento, valor:Number(p.valor)||0, pago:Number(p.valorPago)||0 };
+        if(key==='atrasado'){ atrasadas.push(item); osIdsComAtraso[o.id]=true; }
+        else if(incluirFuturos){ futuras.push(item); }
+      });
+    });
+    if(!atrasadas.length){ toast('Não há parcelas atrasadas para consolidar nesta cobrança.'); return; }
+    atrasadas.sort(function(a,b){ return (a.vencimento||'').localeCompare(b.vencimento||''); });
+    futuras.sort(function(a,b){ return (a.vencimento||'').localeCompare(b.vencimento||''); });
+    var numOS = Object.keys(osIdsComAtraso).length;
+    var totalAtrasado = atrasadas.reduce(function(s,p){ return s+Math.max(0,p.valor-p.pago); },0);
+    var totalFuturo = futuras.reduce(function(s,p){ return s+p.valor; },0);
+    var temParcial = atrasadas.some(function(p){ return p.pago>0; });
+    var c = DB.config;
+
+    function rowsHtml(list, comPagoSaldo){
+      return list.map(function(p){
+        var saldo = Math.max(0, p.valor-p.pago);
+        return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;"><b>'+esc(p.os)+'</b></td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(p.orc)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(p.label)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+dateBR(p.vencimento)+'</td>'+
+          '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(p.valor)+'</td>'+
+          (comPagoSaldo? '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+(p.pago>0?money(p.pago):'—')+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;"><b>'+money(saldo)+'</b></td>' : '')+
+          '</tr>';
+      }).join('');
+    }
+    var atrasadasHtml = '<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#5c1c14;">Parcelas atrasadas — valor cobrado agora</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="background:#fceae7;color:#5c1c14;">'+
+      '<th style="padding:8px;text-align:left;">OS</th><th style="padding:8px;text-align:left;">Orçamento</th><th style="padding:8px;text-align:left;">Parcela</th><th style="padding:8px;">Vencimento</th><th style="padding:8px;text-align:right;">Valor</th>'+
+      (temParcial? '<th style="padding:8px;text-align:right;">Pago</th><th style="padding:8px;text-align:right;">Saldo</th>' : '')+
+      '</tr>'+rowsHtml(atrasadas, temParcial)+'</table>';
+
+    var pixHtml = '';
+    if(c.pixChave || c.pixBanco || c.pixTitular){
+      var pixItens = [];
+      if(c.pixChave) pixItens.push('<b>Chave Pix:</b> '+esc(c.pixChave));
+      if(c.pixBanco) pixItens.push('<b>Banco:</b> '+esc(c.pixBanco));
+      if(c.pixTitular) pixItens.push('<b>Titular:</b> '+esc(c.pixTitular));
+      pixHtml = '<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#204623;">Dados para pagamento</div>'+
+        '<div style="font-size:12.5px;line-height:1.7;">'+pixItens.join('<br>')+'</div>';
+    }
+
+    var futurasHtml = '';
+    if(futuras.length){
+      futurasHtml = '<div style="font-size:13px;font-weight:700;margin:18px 0 6px;color:#454e3d;">Próximos pagamentos — só para ciência, não estão nesta cobrança</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="background:#f6f6f1;color:#454e3d;">'+
+        '<th style="padding:8px;text-align:left;">OS</th><th style="padding:8px;text-align:left;">Orçamento</th><th style="padding:8px;text-align:left;">Parcela</th><th style="padding:8px;">Vencimento</th><th style="padding:8px;text-align:right;">Valor</th></tr>'+
+        rowsHtml(futuras, false)+'</table>'+
+        '<div style="text-align:right;font-size:12px;font-style:italic;margin-top:6px;color:#64685a;">Total a vencer (informativo, não incluso no valor cobrado): '+money(totalFuturo)+'</div>';
+    }
+
+    var dataLinha = (c.cidade? esc(c.cidade)+', ' : '') + esc(dateExtenso(todayISO()));
+    var html = printLogoBlock()+
+      '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:16px;letter-spacing:.03em;padding:9px 18px;border-radius:6px;margin-bottom:12px;">COBRANÇA</div>'+
+      '<div style="font-size:13px;margin-bottom:10px;">'+dataLinha+'</div>'+
+      '<div style="font-size:13px;margin-bottom:10px;"><b>Cliente:</b> '+esc(cliente.nome)+'</div>'+
+      '<div style="background:#204623;color:#fff;font-weight:700;font-size:14px;padding:10px 14px;border-radius:6px;margin-bottom:14px;">Cobrança consolidada — '+numOS+' ordens de serviço com pendência</div>'+
+      atrasadasHtml +
+      '<div style="margin-top:14px;background:#204623;color:#fff;font-weight:700;font-size:14px;padding:10px 14px;border-radius:6px;">Total a cobrar agora: '+money(totalAtrasado)+'</div>'+
+      '<div style="margin-top:14px;"></div>'+
+      pixHtml + futurasHtml;
+
+    var msg = 'Olá '+(cliente.nome||'')+'! Passando para lembrar sobre o pagamento em aberto referente a '+numOS+' ordens de serviço, no valor total de '+money(totalAtrasado)+'. Segue o extrato em anexo. Qualquer dúvida estou à disposição!';
+    doPrint(html, function(){ return buildCobrancaConsolidadaPdf(cliente.nome, numOS, atrasadas, futuras); }, 'Cobranca_consolidada_'+(cliente.nome||''), msg);
+    abrirWhatsappWebFallback(cliente, msg);
+  }
+  // Ponto de entrada único do botão "Cobrar" (tanto no detalhe da OS quanto
+  // na aba Recebimentos): se o cliente tem OUTRAS OS com parcelas atrasadas
+  // além desta, pergunta se quer somar tudo numa cobrança só e, se sim, se
+  // quer incluir também os próximos pagamentos (só para ciência).
+  function cobrarClick(osId){
+    var o = findOS(osId); if(!o) return;
+    var pendentesDestaOS = DB.pagamentos.filter(function(p){ return p.osId===o.id && pagStatusKey(p)!=='pago'; });
+    if(!pendentesDestaOS.length){ toast('Não há valores em aberto nesta OS.'); return; }
+    var outrasComAtraso = DB.os.filter(function(x){
+      return x.id!==o.id && x.clienteId===o.clienteId &&
+        DB.pagamentos.some(function(p){ return p.osId===x.id && pagStatusKey(p)==='atrasado'; });
+    });
+    if(!outrasComAtraso.length){ enviarCobranca(osId); return; }
+    customConfirm('Além da OS '+o.numero+', o cliente '+o.clienteNome+' tem '+outrasComAtraso.length+' outra(s) ordem(ns) de serviço com parcelas atrasadas. Deseja somá-las nesta cobrança?', {okLabel:'Sim, somar', cancelLabel:'Não, só esta OS', danger:false}).then(function(consolidar){
+      if(!consolidar){ enviarCobranca(osId); return; }
+      customConfirm('Incluir também os próximos pagamentos (ainda não vencidos) dessas ordens de serviço, só para ciência do cliente?', {okLabel:'Sim, incluir', cancelLabel:'Não, só as atrasadas', danger:false}).then(function(incluirFuturos){
+        enviarCobrancaConsolidada(o.clienteId, incluirFuturos);
+      });
+    });
+  }
   function printListaCompras(id){
     var o=findOS(id); if(!o) return;
     var c=DB.config;
-    var rows=(o.listaCompras||[]).map(function(i){return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+(i.comprado?'☑':'☐')+'</td><td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(i.desc)+'</td><td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+i.qtd+'</td><td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(i.valor)+'</td></tr>';}).join('');
+    var statusLabelCurto = {estoque:'Em estoque', comprado:'Comprado', comprar:'A comprar'};
+    var rows=(o.listaCompras||[]).map(function(i){
+      var st = compraStatus(i);
+      return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+esc(statusLabelCurto[st.key]||'')+'</td><td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(i.desc)+'</td><td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+i.qtd+'</td><td style="padding:8px;border-bottom:1px solid #ddd;text-align:center;">'+(Number(i.qtdEstoque)||0)+'</td><td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(i.valor)+'</td></tr>';
+    }).join('');
     var dataLinha = (c.cidade? esc(c.cidade)+', ' : '') + esc(dateExtenso(todayISO()));
     var html = printLogoBlock()+
       '<div style="font-size:13px;margin-bottom:10px;">'+dataLinha+'</div>'+
       '<div style="font-size:13px;"><b>Cliente:</b> '+esc(o.clienteNome)+'</div>'+
       '<div style="font-size:13px;margin-bottom:14px;"><b>Lista de compras — OS:</b> '+esc(o.numero)+'</div>'+
       (o.maquina? '<div style="text-align:center;font-weight:700;font-size:14px;letter-spacing:.03em;margin-bottom:12px;text-transform:uppercase;">'+esc(o.maquina)+'</div>' : '')+
-      '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="background:#204623;color:#fff;"><th style="padding:8px;">Comprado</th><th style="padding:8px;text-align:left;">Item</th><th style="padding:8px;">Qtd</th><th style="padding:8px;text-align:right;">Custo est.</th></tr>'+rows+'</table>';
+      '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="background:#204623;color:#fff;"><th style="padding:8px;">Status</th><th style="padding:8px;text-align:left;">Item</th><th style="padding:8px;">Qtd</th><th style="padding:8px;">Estoque</th><th style="padding:8px;text-align:right;">Custo est.</th></tr>'+rows+'</table>';
     doPrint(html, function(){ return buildListaComprasPdf(o); }, 'ListaCompras_'+o.numero);
   }
 
@@ -3981,18 +5466,79 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       if((t=e.target.closest('[data-open-cliente-detail]'))) openClienteDetail(t.dataset.openClienteDetail);
       else if((t=e.target.closest('[data-open-orc]'))) openOrcamentoDetail(t.dataset.openOrc);
       else if((t=e.target.closest('[data-open-os]'))) openOSDetail(t.dataset.openOs);
+      else if((t=e.target.closest('[data-cobrar-pag]'))) cobrarClick(t.dataset.cobrarPag);
       else if((t=e.target.closest('[data-open-pagamento]'))) openPagamentoDialog(t.dataset.openPagamento);
       else if((t=e.target.closest('[data-open-nf]'))) openNfDialog(t.dataset.openNf);
       else if((t=e.target.closest('[data-open-despesa]'))) openDespesaDialog(t.dataset.openDespesa);
       else if((t=e.target.closest('[data-open-fornecedor]'))) openFornecedorDialog(t.dataset.openFornecedor);
       else if((t=e.target.closest('[data-open-produto]'))) openProdutoDialog(t.dataset.openProduto);
       else if((t=e.target.closest('[data-filter-despesa]'))){ DESPESA_FILTRO = t.dataset.filterDespesa; render(); }
-      else if((t=e.target.closest('[data-filter-orc]'))){ ORC_FILTRO = t.dataset.filterOrc; render(); }
-      else if((t=e.target.closest('[data-filter-os]'))){ OS_FILTRO = t.dataset.filterOs; render(); }
-      else if((t=e.target.closest('[data-filter-pag]'))){ PAG_FILTRO = t.dataset.filterPag; render(); }
-      else if((t=e.target.closest('[data-filter-nf]'))){ NF_FILTRO = t.dataset.filterNf; render(); }
+      else if((t=e.target.closest('[data-filter-orc]'))){ ORC_FILTRO = t.dataset.filterOrc; ITEM_FILTROS.orc = ''; render(); }
+      else if((t=e.target.closest('[data-filter-os]'))){ OS_FILTRO = t.dataset.filterOs; ITEM_FILTROS.os = ''; render(); }
+      else if((t=e.target.closest('[data-filter-pag]'))){ PAG_FILTRO = t.dataset.filterPag; OS_FILTROS.pag = ''; render(); }
+      else if((t=e.target.closest('[data-cliente-filtro-clear]'))){ CLIENTE_FILTROS[t.dataset.clienteFiltroClear] = ''; render(); }
+      else if((t=e.target.closest('[data-item-filtro-clear]'))){ ITEM_FILTROS[t.dataset.itemFiltroClear] = ''; render(); }
+      else if((t=e.target.closest('[data-os-filtro-clear]'))){ OS_FILTROS[t.dataset.osFiltroClear] = ''; render(); }
+      else if((t=e.target.closest('[data-filter-nf]'))){ NF_FILTRO = t.dataset.filterNf; OS_FILTROS.nf = ''; render(); }
       else if((t=e.target.closest('[data-fin-period]'))){ FIN_PERIOD = t.dataset.finPeriod; render(); }
       else if((t=e.target.closest('[data-goto]'))) go(t.dataset.goto);
+      else if((t=e.target.closest('[data-toggle-compra-geral]'))){
+        var parts = t.dataset.toggleCompraGeral.split('|');
+        toggleCompraItemGeral(parts[0], parseInt(parts[1],10));
+      }
+      else if((t=e.target.closest('[data-kpi-nav]'))){
+        try{
+          var nav = JSON.parse(t.dataset.kpiNav);
+          if(nav.filterVar==='OS_FILTRO') OS_FILTRO = nav.filterValue;
+          else if(nav.filterVar==='ORC_FILTRO') ORC_FILTRO = nav.filterValue;
+          else if(nav.filterVar==='PAG_FILTRO') PAG_FILTRO = nav.filterValue;
+          else if(nav.filterVar==='DESPESA_FILTRO') DESPESA_FILTRO = nav.filterValue;
+          else if(nav.filterVar==='NF_FILTRO') NF_FILTRO = nav.filterValue;
+          go(nav.view);
+        }catch(err){}
+      }
+    };
+    root.onchange = function(e){
+      var t;
+      if((t=e.target.closest('[data-set-estoque-compra-geral]'))){
+        var parts = t.dataset.setEstoqueCompraGeral.split('|');
+        setEstoqueCompraGeral(parts[0], parseInt(parts[1],10), t.value);
+      }
+    };
+    root.onsubmit = function(e){
+      if(e.target && e.target.id==='form-perfil-nome'){
+        e.preventDefault();
+        if(!fbAuth || !fbAuth.currentUser) return;
+        var v = document.getElementById('perfil-nome-input').value.trim();
+        if(!v){ toast('Informe um nome antes de salvar'); return; }
+        fbAuth.currentUser.updateProfile({displayName:v}).then(function(){
+          toast('Nome atualizado');
+          var navFoot = document.getElementById('nav-foot');
+          if(navFoot) navFoot.textContent = 'Logado como ' + v;
+          render();
+        }).catch(function(){ toast('Não consegui atualizar o nome agora'); });
+      }
+      else if(e.target && e.target.id==='form-mensagens'){
+        e.preventDefault();
+        upsert('config', Object.assign({}, DB.config, {
+          templateOrcamento: document.getElementById('msg-orcamento-input').value,
+          templateOS: document.getElementById('msg-os-input').value,
+          templateCobranca: document.getElementById('msg-cobranca-input').value,
+          templateRecibo: document.getElementById('msg-recibo-input').value
+        }));
+        loadDBFromStores();
+        toast('Mensagens salvas');
+      }
+      else if(e.target && e.target.id==='form-pix'){
+        e.preventDefault();
+        upsert('config', Object.assign({}, DB.config, {
+          pixChave: document.getElementById('pix-chave-input').value.trim(),
+          pixBanco: document.getElementById('pix-banco-input').value.trim(),
+          pixTitular: document.getElementById('pix-titular-input').value.trim()
+        }));
+        loadDBFromStores();
+        toast('Dados de pagamento salvos');
+      }
     };
   }
   // Track which record is open in each detail dialog so status/checklist
@@ -4002,11 +5548,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   openOrcamentoDetail = function(id){ CURRENT_ORC_ID=id; _openOrcamentoDetail(id); };
   var _openOSDetail = openOSDetail;
   openOSDetail = function(id){ CURRENT_OS_ID=id; _openOSDetail(id); };
+  // Recebimento/NF são salvos em dialogs próprios que abrem POR CIMA do
+  // detalhe da OS (quando acionados de dentro dele via "+ Recebimento"/"+
+  // Nota fiscal"). Sem isso, o dialog da OS ficava com o HTML antigo depois
+  // de salvar (recebimentos, totais e o botão "Cobrar" desatualizados) até
+  // ser fechado e reaberto. Reabre o mesmo detalhe (se ainda estiver na
+  // tela) pra refletir o novo registro na hora.
+  function refreshOSDetailIfOpen(osId){
+    var dlg = document.getElementById('dlg-os-detail');
+    if(dlg && dlg.open && CURRENT_OS_ID===osId) openOSDetail(osId);
+  }
 
   // global delegated events for dialog bodies (rendered dynamically)
   document.body.addEventListener('click', function(e){
     var t;
-    if((t=e.target.closest('[data-auth-logout]'))){ customConfirm('Sair da sua conta?', {okLabel:'Sair', danger:false}).then(function(ok){ if(ok && fbAuth) fbAuth.signOut(); }); }
+    if((t=e.target.closest('.foto-thumb'))){
+      document.getElementById('foto-viewer-img').src = t.src;
+      document.getElementById('dlg-foto-viewer').showModal();
+    }
+    else if((t=e.target.closest('[data-remover-foto]'))){
+      var partesFoto = t.dataset.removerFoto.split('|'), tipoFoto=partesFoto[0], parentIdFoto=partesFoto[1], fotoId=partesFoto[2];
+      customConfirm('Remover esta foto?', {okLabel:'Remover'}).then(function(ok){ if(ok) removerFoto(tipoFoto, parentIdFoto, fotoId); });
+    }
+    else if((t=e.target.closest('[data-auth-logout]'))){ customConfirm('Sair da sua conta?', {okLabel:'Sair', danger:false}).then(function(ok){ if(ok && fbAuth) fbAuth.signOut(); }); }
     else if(e.target.closest('[data-export-backup]')){ exportDataBackup(); }
     else if(e.target.closest('[data-import-backup]')){ document.getElementById('backup-import-input').click(); }
     else if(e.target.closest('[data-migrate-cloud]')){
@@ -4019,7 +5583,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else if((t=e.target.closest('[data-dup-orc]'))){ var dupOrcId=t.dataset.dupOrc; customConfirm('Duplicar este orçamento? Um novo orçamento (com número próprio) será criado com os mesmos itens, pronto para você ajustar.', {okLabel:'Duplicar', danger:false}).then(function(ok){ if(ok) duplicateOrcamento(dupOrcId); }); }
     else if((t=e.target.closest('[data-set-os-status]')) && CURRENT_OS_ID){ setOSStatus(CURRENT_OS_ID, t.dataset.setOsStatus); }
     else if((t=e.target.closest('[data-toggle-compra]')) && CURRENT_OS_ID){ toggleCompraItem(CURRENT_OS_ID, parseInt(t.dataset.toggleCompra,10)); }
-    else if((t=e.target.closest('[data-print-os]'))){ printOS(t.dataset.printOs); }
+    else if((t=e.target.closest('[data-print-os]'))){ enviarOSPdf(t.dataset.printOs); }
+    else if((t=e.target.closest('[data-cobrar-os]'))){ cobrarClick(t.dataset.cobrarOs); }
+    else if((t=e.target.closest('[data-recibo-pag]'))){ gerarReciboPagamento(t.dataset.reciboPag); }
+    else if((t=e.target.closest('[data-restore-lixeira]'))){
+      var partes = t.dataset.restoreLixeira.split('|'), tipoR=partes[0], idR=partes[1];
+      var metaR = LIXEIRA_TIPO_META[tipoR];
+      restoreRec(tipoR, idR); loadDBFromStores(); render();
+      toast((metaR?metaR.label:'Item')+' restaurado');
+    }
     else if((t=e.target.closest('[data-dup-os]'))){ var dupOsId=t.dataset.dupOs; customConfirm('Duplicar esta OS? Uma nova OS (com número próprio) será criada com os mesmos itens, sem recebimentos/NF vinculados.', {okLabel:'Duplicar', danger:false}).then(function(ok){ if(ok) duplicateOS(dupOsId); }); }
     else if((t=e.target.closest('[data-print-lista]'))){ printListaCompras(t.dataset.printLista); }
     else if((t=e.target.closest('[data-open-os-from-pagamento]'))){ document.getElementById('dlg-pagamento').close(); openOSDetail(t.dataset.openOsFromPagamento); }
@@ -4067,23 +5639,69 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
   });
 
-  /* ---------------- busca rápida global ---------------- */
+  /* ---------------- busca rápida global (unificada) ----------------
+     No Painel, a busca é geral (cliente + orçamento + OS), e clicar num
+     resultado navega/abre o detalhe. Dentro de um módulo com filtro
+     (Orçamentos, OS, Recebimentos, NF, Clientes), a MESMA caixa passa a
+     aceitar mais de um critério: aparecem sugestões de cliente e do tipo
+     do próprio módulo juntas, e cada seleção vira uma "tag" que filtra a
+     lista (ver ITEM_FILTROS/CLIENTE_FILTROS/OS_FILTROS e
+     activeFiltrosTagsHtml) - dá pra somar cliente + um item específico,
+     cada tag removível na hora sem apagar as outras. Módulos sem entrada
+     aqui (Financeiro, Despesas etc.) caem no fallback geral. */
+  var VIEW_SEARCH_TYPES = {
+    orcamentos: ['cliente','orcamento'],
+    os: ['cliente','os'],
+    clientes: ['cliente'],
+    pagamentos: ['cliente','os'],
+    nf: ['cliente','os']
+  };
+  // Dentro de um módulo, as sugestões de cliente ficam restritas a quem
+  // realmente tem registro ali (reaproveita CLIENTE_FILTRO_FONTES) - assim
+  // não aparece cliente sem nenhum orçamento/OS/recebimento/NF pra escolher.
+  var VIEW_CLIENTE_PREFIX = { orcamentos:'orc', os:'os', pagamentos:'pag', nf:'nf' };
+  // Texto do campo de busca acompanha o que ela realmente busca em cada
+  // módulo — módulos fora deste mapa (Painel, Financeiro, Despesas etc.)
+  // usam o texto padrão, já que a busca ali continua geral.
+  var SEARCH_PLACEHOLDER = {
+    orcamentos: "🔎 Buscar cliente ou orçamento...",
+    os: "🔎 Buscar cliente ou OS...",
+    clientes: "🔎 Buscar cliente...",
+    pagamentos: "🔎 Buscar cliente ou OS...",
+    nf: "🔎 Buscar cliente ou OS..."
+  };
+  function atualizarPlaceholderBusca(){
+    var texto = SEARCH_PLACEHOLDER[VIEW] || "🔎 Buscar cliente, orçamento, OS...";
+    var i1 = document.getElementById('global-search-input');
+    var i2 = document.getElementById('global-search-input-m');
+    if(i1) i1.placeholder = texto;
+    if(i2) i2.placeholder = texto;
+  }
   function globalSearchResults(q){
     q = String(q||"").trim().toLowerCase();
     if(q.length<2) return [];
     var out = [];
-    DB.clientes.forEach(function(c){
-      var hay = [c.nome, c.telefone, c.propriedade].filter(Boolean).join(' ').toLowerCase();
-      if(hay.indexOf(q)>=0) out.push({type:'cliente', id:c.id, title:c.nome, sub:c.propriedade||c.telefone||'cliente'});
-    });
-    DB.orcamentos.forEach(function(o){
-      var hay = [o.numero, o.clienteNome, o.maquina, o.titulo].filter(Boolean).join(' ').toLowerCase();
-      if(hay.indexOf(q)>=0) out.push({type:'orcamento', id:o.id, title:o.numero, sub:[o.clienteNome,o.titulo||o.maquina].filter(Boolean).join(' · ')});
-    });
-    DB.os.forEach(function(o){
-      var hay = [o.numero, o.clienteNome, o.maquina, o.titulo].filter(Boolean).join(' ').toLowerCase();
-      if(hay.indexOf(q)>=0) out.push({type:'os', id:o.id, title:o.numero, sub:[o.clienteNome,o.titulo||o.maquina].filter(Boolean).join(' · ')});
-    });
+    var allowed = VIEW_SEARCH_TYPES[VIEW]; // undefined = sem módulo mapeado -> busca geral
+    var clientePrefix = VIEW_CLIENTE_PREFIX[VIEW];
+    if(!allowed || allowed.indexOf('cliente')>=0){
+      var baseClientes = clientePrefix ? clientesParaFiltro(clientePrefix) : DB.clientes;
+      baseClientes.forEach(function(c){
+        var hay = [c.nome, c.telefone, c.propriedade].filter(Boolean).join(' ').toLowerCase();
+        if(hay.indexOf(q)>=0) out.push({type:'cliente', id:c.id, title:c.nome, sub:c.propriedade||c.telefone||'cliente'});
+      });
+    }
+    if(!allowed || allowed.indexOf('orcamento')>=0){
+      DB.orcamentos.forEach(function(o){
+        var hay = [o.numero, o.clienteNome, o.maquina, o.titulo].filter(Boolean).join(' ').toLowerCase();
+        if(hay.indexOf(q)>=0) out.push({type:'orcamento', id:o.id, title:o.numero, sub:[o.clienteNome,o.titulo||o.maquina].filter(Boolean).join(' · ')});
+      });
+    }
+    if(!allowed || allowed.indexOf('os')>=0){
+      DB.os.forEach(function(o){
+        var hay = [o.numero, o.clienteNome, o.maquina, o.titulo].filter(Boolean).join(' ').toLowerCase();
+        if(hay.indexOf(q)>=0) out.push({type:'os', id:o.id, title:o.numero, sub:[o.clienteNome,o.titulo||o.maquina].filter(Boolean).join(' · ')});
+      });
+    }
     return out.slice(0,8);
   }
   var SEARCH_META = { cliente:{ic:"👤",label:"Cliente"}, orcamento:{ic:"📝",label:"Orçamento"}, os:{ic:"🔧",label:"OS"} };
@@ -4096,9 +5714,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }).join('');
   }
   function openGlobalSearchResult(type, id){
-    if(type==='cliente'){ go('clientes'); openClienteDetail(id); }
-    else if(type==='orcamento'){ go('orcamentos'); openOrcamentoDetail(id); }
-    else if(type==='os'){ go('os'); openOSDetail(id); }
+    // Selecionar um resultado dentro do módulo relevante vira uma tag que
+    // filtra a lista (cliente e/ou item específico), em vez de abrir o
+    // detalhe por cima - dá pra somar mais de um critério na mesma busca.
+    // Fora do módulo (ex: buscando pelo Painel), continua abrindo o
+    // detalhe/navegando direto, como antes.
+    if(type==='cliente'){
+      if(VIEW==='clientes'){ ITEM_FILTROS.cliente = id; render(); }
+      else if(VIEW==='orcamentos'){ CLIENTE_FILTROS.orc = id; ITEM_FILTROS.orc = ''; render(); }
+      else if(VIEW==='os'){ CLIENTE_FILTROS.os = id; ITEM_FILTROS.os = ''; render(); }
+      else if(VIEW==='pagamentos'){ CLIENTE_FILTROS.pag = id; OS_FILTROS.pag = ''; render(); }
+      else if(VIEW==='nf'){ CLIENTE_FILTROS.nf = id; OS_FILTROS.nf = ''; render(); }
+      else { go('clientes'); openClienteDetail(id); }
+    }
+    else if(type==='orcamento'){
+      if(VIEW==='orcamentos'){ ITEM_FILTROS.orc = id; render(); }
+      else { go('orcamentos'); openOrcamentoDetail(id); }
+    }
+    else if(type==='os'){
+      if(VIEW==='os'){ ITEM_FILTROS.os = id; render(); }
+      // Dentro de Recebimentos/NF, um resultado "OS" filtra a lista atual
+      // por aquela OS (fica no módulo) em vez de navegar pra tela de OS -
+      // é isso que a pessoa quer ver quando busca uma OS ali dentro.
+      else if(VIEW==='pagamentos'){ OS_FILTROS.pag = id; render(); }
+      else if(VIEW==='nf'){ OS_FILTROS.nf = id; render(); }
+      else { go('os'); openOSDetail(id); }
+    }
   }
   function setupGlobalSearch(inputId, resultsId){
     var input = document.getElementById(inputId), results = document.getElementById(resultsId);
@@ -4231,6 +5872,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   }
   function authSetMode(mode){
     AUTH_UI_MODE = mode;
+    document.getElementById('auth-nome-field').hidden = (mode!=='signup');
+    document.getElementById('auth-nome').required = (mode==='signup');
     document.getElementById('auth-confirmar-field').hidden = (mode!=='signup');
     document.getElementById('auth-confirmar').required = (mode==='signup');
     document.getElementById('btn-auth-submit').textContent = mode==='signup' ? 'Criar conta' : 'Entrar';
@@ -4321,7 +5964,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         var navFoot = document.getElementById('nav-foot');
         if(user){
           gate.hidden = true;
-          if(navFoot) navFoot.textContent = 'Logado como ' + (user.email || 'usuário');
+          if(navFoot) navFoot.textContent = 'Logado como ' + (user.displayName || user.email || 'usuário');
           initCloudSync();
         } else {
           gate.hidden = false;
@@ -4357,6 +6000,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     e.preventDefault();
     if(!fbAuth) return;
     authClearError();
+    var nome = document.getElementById('auth-nome').value.trim();
     var email = document.getElementById('auth-email').value.trim();
     var senha = document.getElementById('auth-senha').value;
     var confirmar = document.getElementById('auth-confirmar').value;
@@ -4364,12 +6008,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       authShowError('As senhas não são iguais.');
       return;
     }
+    if(AUTH_UI_MODE==='signup' && !nome){
+      authShowError('Informe seu nome — ele aparece nos registros de "última alteração" pra identificar quem mexeu em quê.');
+      return;
+    }
     var submitBtn = document.getElementById('btn-auth-submit');
     var originalLabel = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Aguarde...';
+    // No cadastro, grava o nome no próprio perfil do Firebase (displayName)
+    // assim que a conta é criada - é esse nome que aparece depois em "quem
+    // alterou" nos registros (orçamento, OS, recebimento, etc.).
     var p = AUTH_UI_MODE==='signup'
-      ? fbAuth.createUserWithEmailAndPassword(email, senha)
+      ? fbAuth.createUserWithEmailAndPassword(email, senha).then(function(cred){
+          return cred.user.updateProfile({displayName: nome}).then(function(){
+            // updateProfile não dispara onAuthStateChanged de novo (o Firebase
+            // só notifica login/logout, não mudança de perfil) - atualiza a UI
+            // aqui na hora, senão o rodapé ficaria mostrando o e-mail até a
+            // pessoa sair e entrar de novo.
+            var navFoot = document.getElementById('nav-foot');
+            if(navFoot) navFoot.textContent = 'Logado como ' + nome;
+            render();
+          });
+        })
       : fbAuth.signInWithEmailAndPassword(email, senha);
     p.then(function(){
       // onAuthStateChanged cuida de esconder a tela de login
@@ -4610,6 +6271,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   hydrateAllStoresFromLocalStorage();
   loadDBFromStores();
   if(!DB.config || !storeEl('config').children.length){ upsert('config', defaultConfig()); loadDBFromStores(); }
+  purgeLixeiraExpirada();
+  loadDBFromStores();
   // DESATIVADA (01/09/2026): essa migração apagava tudo que não fosse o orçamento
   // ORC-2026-00193 na primeira vez que rodasse em cada navegador/contexto sem a
   // flag marcada - o que incluía orçamentos reais criados DEPOIS (ex: 194, 195)
