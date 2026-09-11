@@ -300,6 +300,7 @@
   .auth-box h2{margin:0 0 4px;font-family:var(--font-display);letter-spacing:.02em;color:var(--accent-strong);}
   .auth-box .field{text-align:left;margin-bottom:12px;}
   .auth-error{background:var(--bad-soft);color:var(--bad-ink);border-radius:var(--radius-sm);padding:10px 12px;font-size:12.5px;margin-bottom:14px;text-align:left;line-height:1.4;}
+  .auth-success{background:var(--good-soft);color:var(--good-ink);border-radius:var(--radius-sm);padding:10px 12px;font-size:12.5px;margin-bottom:14px;text-align:left;line-height:1.4;}
 
   table.simple{width:100%;border-collapse:collapse;font-size:13px;}
   table.simple th{text-align:left;font-size:10.5px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line);}
@@ -872,15 +873,18 @@
     <h2>HidrauMiller</h2>
     <div class="hint" id="auth-subtitle" style="margin-bottom:16px;">Verificando sua sessão...</div>
     <div class="auth-error" id="auth-error" hidden></div>
+    <div class="auth-success" id="auth-success" hidden></div>
     <form id="form-auth" hidden>
       <div class="field" id="auth-nome-field" hidden><label>Seu nome</label><input type="text" name="nome" id="auth-nome" autocomplete="name" placeholder="Ex: Raissa"></div>
       <div class="field"><label>E-mail</label><input type="email" name="email" id="auth-email" required autocomplete="username"></div>
-      <div class="field"><label>Senha</label><input type="password" name="senha" id="auth-senha" required minlength="6" autocomplete="current-password"></div>
+      <div class="field" id="auth-senha-field"><label>Senha</label><input type="password" name="senha" id="auth-senha" minlength="6" autocomplete="current-password"></div>
       <div class="field" id="auth-confirmar-field" hidden><label>Confirmar senha</label><input type="password" name="confirmar" id="auth-confirmar" minlength="6" autocomplete="new-password"></div>
-      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;color:var(--ink);margin:-4px 0 12px;"><input type="checkbox" id="auth-mostrar-senha" style="width:auto;"> Mostrar senha</label>
+      <label id="auth-mostrar-senha-row" style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;color:var(--ink);margin:-4px 0 12px;"><input type="checkbox" id="auth-mostrar-senha" style="width:auto;"> Mostrar senha</label>
       <button type="submit" class="btn primary" id="btn-auth-submit" style="width:100%;margin-top:6px;">Entrar</button>
     </form>
+    <button type="button" class="btn ghost" id="btn-auth-forgot" hidden style="width:100%;margin-top:10px;">Esqueci minha senha</button>
     <button type="button" class="btn ghost" id="btn-auth-toggle" hidden style="width:100%;margin-top:10px;">Não tem conta? Criar conta</button>
+    <button type="button" class="btn ghost" id="btn-auth-back" hidden style="width:100%;margin-top:10px;">Voltar para o login</button>
     <button type="button" class="btn ghost" id="btn-auth-retry" hidden style="width:100%;margin-top:10px;">Tentar novamente</button>
   </div>
 </div>
@@ -6522,16 +6526,35 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var el = document.getElementById('auth-error');
     el.hidden = true; el.textContent = '';
   }
+  function authShowSuccess(msg){
+    var el = document.getElementById('auth-success');
+    el.textContent = msg; el.hidden = false;
+  }
+  function authClearSuccess(){
+    var el = document.getElementById('auth-success');
+    el.hidden = true; el.textContent = '';
+  }
+  // Terceiro modo além de 'login'/'signup': 'reset', pra quem esqueceu a
+  // senha - mostra só o campo de e-mail e manda o link de redefinição do
+  // próprio Firebase (sendPasswordResetEmail), sem precisar saber a senha
+  // atual.
   function authSetMode(mode){
     AUTH_UI_MODE = mode;
     document.getElementById('auth-nome-field').hidden = (mode!=='signup');
     document.getElementById('auth-nome').required = (mode==='signup');
     document.getElementById('auth-confirmar-field').hidden = (mode!=='signup');
     document.getElementById('auth-confirmar').required = (mode==='signup');
-    document.getElementById('btn-auth-submit').textContent = mode==='signup' ? 'Criar conta' : 'Entrar';
+    document.getElementById('auth-senha-field').hidden = (mode==='reset');
+    document.getElementById('auth-senha').required = (mode!=='reset');
+    document.getElementById('auth-mostrar-senha-row').hidden = (mode==='reset');
+    document.getElementById('btn-auth-submit').textContent = mode==='signup' ? 'Criar conta' : (mode==='reset' ? 'Enviar link de redefinição' : 'Entrar');
+    document.getElementById('btn-auth-toggle').hidden = (mode==='reset');
     document.getElementById('btn-auth-toggle').textContent = mode==='signup' ? 'Já tem conta? Entrar' : 'Não tem conta? Criar conta';
-    document.getElementById('auth-subtitle').textContent = mode==='signup' ? 'Crie sua conta para acessar o HidrauMiller.' : 'Entre com seu e-mail e senha.';
+    document.getElementById('btn-auth-forgot').hidden = (mode!=='login');
+    document.getElementById('btn-auth-back').hidden = (mode!=='reset');
+    document.getElementById('auth-subtitle').textContent = mode==='signup' ? 'Crie sua conta para acessar o HidrauMiller.' : (mode==='reset' ? 'Informe seu e-mail pra receber o link de redefinição de senha.' : 'Entre com seu e-mail e senha.');
     authClearError();
+    authClearSuccess();
   }
   // Carrega o SDK do Firebase dinamicamente (em vez de <script src> fixo no
   // topo da página) para NUNCA travar o carregamento do app inteiro: se a
@@ -6640,6 +6663,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   document.getElementById('btn-auth-toggle').addEventListener('click', function(){
     authSetMode(AUTH_UI_MODE==='signup' ? 'login' : 'signup');
   });
+  document.getElementById('btn-auth-forgot').addEventListener('click', function(){
+    authSetMode('reset');
+  });
+  document.getElementById('btn-auth-back').addEventListener('click', function(){
+    authSetMode('login');
+  });
   document.getElementById('btn-auth-retry').addEventListener('click', function(){
     initFirebaseAuth();
   });
@@ -6652,8 +6681,24 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     e.preventDefault();
     if(!fbAuth) return;
     authClearError();
-    var nome = document.getElementById('auth-nome').value.trim();
+    authClearSuccess();
     var email = document.getElementById('auth-email').value.trim();
+    if(AUTH_UI_MODE==='reset'){
+      var resetBtn = document.getElementById('btn-auth-submit');
+      resetBtn.disabled = true;
+      resetBtn.textContent = 'Enviando...';
+      fbAuth.sendPasswordResetEmail(email).then(function(){
+        authSetMode('login');
+        resetBtn.disabled = false;
+        authShowSuccess('Link de redefinição enviado para '+email+'. Confira sua caixa de entrada (e o spam).');
+      }).catch(function(err){
+        authShowError(authErrorMessage(err));
+        resetBtn.disabled = false;
+        resetBtn.textContent = 'Enviar link de redefinição';
+      });
+      return;
+    }
+    var nome = document.getElementById('auth-nome').value.trim();
     var senha = document.getElementById('auth-senha').value;
     var confirmar = document.getElementById('auth-confirmar').value;
     if(AUTH_UI_MODE==='signup' && senha !== confirmar){
