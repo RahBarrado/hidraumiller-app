@@ -535,7 +535,7 @@
           <div class="hint" style="margin-top:5px;">A lista vem do cadastro do cliente selecionado. Se só tiver 1 cadastrado, já vem selecionado sozinho. Não achou quem procura? Escolha "+ Novo solicitante..." pra cadastrar na hora (com celular e e-mail, se quiser).</div>
         </div>
         <div class="grid2">
-          <div class="field"><label>Número</label><input name="numero" required readonly title="Gerado automaticamente, em sequência - não pode ser editado."></div>
+          <div class="field"><label>Número</label><input name="numero" id="orc-numero-input" required readonly></div>
           <div class="field"><label>Data</label><input name="data" type="date" required></div>
         </div>
         <div class="grid2">
@@ -2915,6 +2915,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     document.getElementById('dlg-orcamento-title').textContent = id? "Editar orçamento "+o.numero : "Novo orçamento";
     form.id.value=o.id;
     form.numero.value = o.numero||"";
+    // Em orçamento NOVO o número é sempre automático (trava o campo, pra não
+    // ter gente digitando por engano). Só ao EDITAR um orçamento que já
+    // existe é que libera pra corrigir manualmente - único jeito de resolver
+    // um número duplicado, que pode acontecer se dois aparelhos criarem
+    // orçamentos offline (sem sincronizar entre si) no mesmo intervalo.
+    form.numero.readOnly = !id;
+    form.numero.title = id
+      ? 'Gerado automaticamente ao criar. Pode ser corrigido aqui, com cuidado, só em casos de número duplicado (ex: dois aparelhos criaram orçamentos offline ao mesmo tempo).'
+      : 'Gerado automaticamente, em sequência - não pode ser editado.';
     fillClienteSelect(document.getElementById('orc-cliente-select'), o.clienteId);
     PREV_ORC_CLIENTE_VALUE = o.clienteId||"";
     fillMaquinaSelect(document.getElementById('orc-maquina-select'), o.clienteId, o.maquinaId, o.maquina);
@@ -3176,10 +3185,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       ));
     }
     var semValidade = document.getElementById('orc-sem-validade').checked;
-    // número: sempre gerado em sequência (nunca lido do campo do formulário,
-    // que agora é somente leitura) - existing.numero se for edição, senão o próximo da fila.
+    // número: em orçamento NOVO sempre é gerado em sequência (campo travado,
+    // nem lê do formulário). Em EDIÇÃO, agora o campo pode ser corrigido à
+    // mão (ver openOrcamentoDialog) - então lê o valor digitado, mas barra
+    // se ele bater com o número de outro orçamento que não seja este mesmo
+    // (evita trocar um número duplicado por outro).
+    var numeroFinal = existing ? (form.numero.value.trim() || existing.numero) : nextNumero(DB.orcamentos,'ORC',5,192);
+    if(existing && numeroFinal !== existing.numero){
+      var conflito = DB.orcamentos.some(function(x){ return x.id!==existing.id && x.numero===numeroFinal; });
+      if(conflito){
+        customAlert('Já existe outro orçamento com o número "'+numeroFinal+'". Escolha um número diferente.');
+        return null;
+      }
+    }
     return {
-      id:form.id.value, numero: existing? existing.numero : nextNumero(DB.orcamentos,'ORC',5,192),
+      id:form.id.value, numero: numeroFinal,
       clienteId:clienteId, clienteNome:cliente.nome, titulo: form.titulo.value.trim().toUpperCase(), solicitante: solicitanteNome, solicitanteId: solicitanteId, maquina:maquinaNome, maquinaId:maquinaId,
       data:form.data.value||todayISO(), validade: semValidade? null : (parseInt(form.validade.value)||7), semValidade: semValidade,
       itensServico: itensServico,
@@ -6188,7 +6208,19 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     else if((t=e.target.closest('[data-set-orc-status]')) && CURRENT_ORC_ID){ setOrcamentoStatus(CURRENT_ORC_ID, t.dataset.setOrcStatus); }
     else if((t=e.target.closest('[data-edit-orc]'))){ document.getElementById('dlg-orcamento-detail').close(); openOrcamentoDialog(t.dataset.editOrc); }
-    else if((t=e.target.closest('[data-print-orc]'))){ printOrcamento(t.dataset.printOrc); }
+    else if((t=e.target.closest('[data-print-orc]'))){
+      var printOrcId = t.dataset.printOrc;
+      var orcAntesDoPdf = findOrcamento(printOrcId);
+      printOrcamento(printOrcId);
+      // Gerar o PDF já é, na prática, mandar o orçamento pro cliente - então
+      // se ainda estava em "Rascunho", passa sozinho pra "Enviado" (pedido
+      // da Raissa). Só faz isso saindo de rascunho: reimprimir um orçamento
+      // já aprovado/reprovado não deve regredir o status.
+      if(orcAntesDoPdf && orcAntesDoPdf.status==='rascunho'){
+        setOrcamentoStatus(printOrcId, 'enviado');
+        openOrcamentoDetail(printOrcId);
+      }
+    }
     else if((t=e.target.closest('[data-gerar-os]'))){ document.getElementById('dlg-orcamento-detail').close(); gerarOSFromOrcamento(t.dataset.gerarOs); }
     else if((t=e.target.closest('[data-dup-orc]'))){ var dupOrcId=t.dataset.dupOrc; customConfirm('Duplicar este orçamento? Um novo orçamento (com número próprio) será criado com os mesmos itens, pronto para você ajustar.', {okLabel:'Duplicar', danger:false}).then(function(ok){ if(ok) duplicateOrcamento(dupOrcId); }); }
     else if((t=e.target.closest('[data-set-os-status]')) && CURRENT_OS_ID){ setOSStatus(CURRENT_OS_ID, t.dataset.setOsStatus); }
