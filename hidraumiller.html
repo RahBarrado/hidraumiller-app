@@ -589,7 +589,17 @@
 
         <div class="field grow"><label>Observações (aparece no PDF)</label><textarea name="obs" class="uc"></textarea></div>
         <div class="grid2">
-          <div class="field"><label>Desconto (R$)</label><input name="desconto" type="number" step="0.01" value="0"></div>
+          <div class="field">
+            <label>Desconto</label>
+            <div style="display:flex;gap:6px;">
+              <input name="descontoValor" type="number" step="0.01" value="0" style="flex:1;min-width:0;">
+              <select name="descontoTipo" style="width:68px;flex:none;">
+                <option value="valor">R$</option>
+                <option value="percentual">%</option>
+              </select>
+            </div>
+            <div class="hint" id="orc-desconto-hint" style="margin-top:2px;"></div>
+          </div>
           <div class="field"><label>Total estimado</label><input id="orc-total-preview" disabled></div>
         </div>
       </div>
@@ -1522,6 +1532,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function findProduto(id){ return DB.produtos.find(function(x){return x.id===id;}); }
 
   function itemsTotal(items){ return (items||[]).reduce(function(s,i){ return s + (Number(i.qtd)||0)*(Number(i.valor)||0); },0); }
+  // Desconto do orçamento/OS pode ser digitado em R$ (valor fixo) ou em %
+  // (do subtotal dos itens) - mas sempre é guardado em `desconto` já como
+  // valor final em reais, pra não precisar mexer em nenhum lugar que soma/
+  // exibe o total. `descontoTipo`/`descontoValor` guardam só o que a pessoa
+  // digitou de fato (ex: tipo='percentual', valor=10), pra reabrir o
+  // orçamento pra editar e continuar mostrando "10" com "%" marcado, em vez
+  // do valor em reais já calculado.
+  function calcDescontoReais(subtotal, descontoTipo, descontoValor){
+    var val = Number(descontoValor)||0;
+    if(val<=0) return 0;
+    if(descontoTipo==='percentual') return Math.min(subtotal, (subtotal*val)/100);
+    return Math.min(subtotal, val);
+  }
+  function descontoLabelText(descontoTipo, descontoValor){
+    if(descontoTipo==='percentual' && Number(descontoValor)>0){
+      var pctStr = (Math.round(Number(descontoValor)*100)/100).toString().replace('.', ',');
+      return 'Desconto ('+pctStr+'%)';
+    }
+    return 'Desconto';
+  }
 
   function periodBounds(period, offset){
     offset = offset||0;
@@ -3151,9 +3181,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     ['orc-servicos-rows','orc-compras-rows'].forEach(function(id){
       Array.prototype.slice.call(document.querySelectorAll('#'+id+' .i-desc')).forEach(autoGrowTextarea);
     });
-    var desconto = parseFloat(formEl.desconto.value)||0;
-    var total = itemsTotal(serv)-desconto;
+    var subtotalServ = itemsTotal(serv);
+    var descontoTipo = formEl.descontoTipo.value;
+    var descontoValor = parseFloat(formEl.descontoValor.value)||0;
+    var desconto = calcDescontoReais(subtotalServ, descontoTipo, descontoValor);
+    var total = subtotalServ-desconto;
     document.getElementById('orc-total-preview').value = money(total);
+    var descontoHintEl = document.getElementById('orc-desconto-hint');
+    descontoHintEl.textContent = (descontoTipo==='percentual' && descontoValor>0) ? ('Equivale a '+money(desconto)) : '';
     var custo = serv.reduce(function(s,it){
       // linha com custo/margem preenchidos manualmente: usa esse custo (mais
       // atual que o do catálogo, já que a pessoa acabou de digitar/revisar
@@ -3178,7 +3213,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function openOrcamentoDialog(id){
     var dlg=document.getElementById('dlg-orcamento'), form=document.getElementById('form-orcamento');
     var o = id? findOrcamento(id) : { id:uid('orc'), numero:nextNumero(DB.orcamentos,'ORC',5,192), clienteId:"", clienteNome:"", maquina:"", maquinaId:"",
-      data:todayISO(), validade:7, semValidade:false, itensServico:[], listaCompras:[], obs:"", desconto:0, status:'rascunho', formaPagamento:"Pix", parcelas:null, solicitante:"", solicitanteId:"", titulo:"" };
+      data:todayISO(), validade:7, semValidade:false, itensServico:[], listaCompras:[], obs:"", desconto:0, descontoTipo:'valor', descontoValor:0, status:'rascunho', formaPagamento:"Pix", parcelas:null, solicitante:"", solicitanteId:"", titulo:"" };
     document.getElementById('dlg-orcamento-title').textContent = id? "Editar orçamento "+o.numero : "Novo orçamento";
     form.id.value=o.id;
     form.numero.value = o.numero||"";
@@ -3202,7 +3237,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     form.data.value=o.data||todayISO(); form.validade.value=o.validade||7;
     document.getElementById('orc-sem-validade').checked = !!o.semValidade;
     form.validade.disabled = !!o.semValidade;
-    form.obs.value=o.obs||""; form.desconto.value=o.desconto||0;
+    form.obs.value=o.obs||"";
+    form.descontoTipo.value = o.descontoTipo==='percentual' ? 'percentual' : 'valor';
+    form.descontoValor.value = (o.descontoValor!=null ? o.descontoValor : (o.desconto||0));
     document.getElementById('orc-forma-pagamento').value = o.formaPagamento||"Pix";
     document.getElementById('orc-parcelas-num').value = o.parcelas||2;
     document.getElementById('orc-prazo-dias').value = o.prazoDias||30;
@@ -3233,7 +3270,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   wireItemsEditor('orc-servicos-rows', null, document.getElementById('form-orcamento'));
   wireItemsEditor('orc-compras-rows', null, document.getElementById('form-orcamento'));
   document.getElementById('form-orcamento').addEventListener('input', function(e){
-    if(e.target.name==='desconto') updateOrcTotalPreview(e.target.form);
+    if(e.target.name==='descontoValor') updateOrcTotalPreview(e.target.form);
+  });
+  document.getElementById('form-orcamento').addEventListener('change', function(e){
+    if(e.target.name==='descontoTipo') updateOrcTotalPreview(e.target.form);
   });
   document.getElementById('orc-sem-validade').addEventListener('change', function(e){
     document.getElementById('form-orcamento').validade.disabled = e.target.checked;
@@ -3433,7 +3473,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
 
     var existing = findOrcamento(form.id.value);
-    var novoTotal = itemsTotal(itensServico) - (parseFloat(form.desconto.value)||0);
+    var descontoTipoFinal = form.descontoTipo.value==='percentual' ? 'percentual' : 'valor';
+    var descontoValorFinal = parseFloat(form.descontoValor.value)||0;
+    var descontoReaisFinal = calcDescontoReais(itemsTotal(itensServico), descontoTipoFinal, descontoValorFinal);
+    var novoTotal = itemsTotal(itensServico) - descontoReaisFinal;
     var historico = (existing && existing.historico) ? existing.historico.slice() : [];
     if(!existing){
       historico.push(historicoEntry('Orçamento criado — total '+money(novoTotal)+' · '+itensServico.length+' item(ns)'));
@@ -3471,7 +3514,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       data:form.data.value||todayISO(), validade: semValidade? null : (parseInt(form.validade.value)||7), semValidade: semValidade,
       itensServico: itensServico,
       listaCompras: readItemRows(document.getElementById('orc-compras-rows')),
-      obs:form.obs.value.trim().toUpperCase(), desconto: parseFloat(form.desconto.value)||0,
+      obs:form.obs.value.trim().toUpperCase(), desconto: descontoReaisFinal, descontoTipo: descontoTipoFinal, descontoValor: descontoValorFinal,
       status: existing? existing.status : 'rascunho',
       formaPagamento: document.getElementById('orc-forma-pagamento').value,
       parcelas: ['Cartão parcelado','Boleto parcelado'].indexOf(document.getElementById('orc-forma-pagamento').value)>=0 ? (parseInt(document.getElementById('orc-parcelas-num').value,10)||2) : null,
@@ -3592,7 +3635,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       id:uid('os'), numero: nextNumero(DB.os,'OS'), orcamentoOrigemId:o.id,
       clienteId:o.clienteId, clienteNome:o.clienteNome, titulo:o.titulo||"", solicitante:o.solicitante||"", solicitanteId:o.solicitanteId||"", maquina:o.maquina, maquinaId:o.maquinaId||"",
       itens: (o.itensServico||[]).map(function(i){ return {desc:i.desc, qtd:i.qtd, valor:i.valor, tipo:i.tipo||'servico'}; }),
-      desconto: o.desconto||0,
+      desconto: o.desconto||0, descontoTipo: o.descontoTipo||'valor', descontoValor: (o.descontoValor!=null? o.descontoValor : (o.desconto||0)),
       descricao: o.obs||"", status:'em_andamento', dataAbertura: todayISO(), dataConclusao:"",
       listaCompras: (o.listaCompras||[]).map(function(i){ return {desc:i.desc, qtd:i.qtd, valor:i.valor, comprado:false, qtdEstoque:0}; }),
       valorTotal: itemsTotal(o.itensServico)-(Number(o.desconto)||0),
@@ -3760,7 +3803,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       (o.solicitante? dt("Solicitante", esc(o.solicitante)) : '')+
       dt("Máquina", maquinaLinkHtml(o.clienteId, o.maquinaId, o.maquina))+ dt("Data", dateBR(o.data))+
       dt("Validade", o.validade+" dias")+
-      (descontoOrc>0? dt("Valor (sem desconto)", money(subtotalOrc))+dt("Desconto", "- "+money(descontoOrc)) : '')+
+      (descontoOrc>0? dt("Valor (sem desconto)", money(subtotalOrc))+dt(descontoLabelText(o.descontoTipo, o.descontoValor), "- "+money(descontoOrc)) : '')+
       dt("Total"+(descontoOrc>0? " (com desconto)":""), money(total))+
       dt("Forma de pagamento", esc(formaPagamentoLabel(o)))+
       '</div>';
@@ -3892,7 +3935,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       (o.titulo? dt("Serviço solicitado", esc(o.titulo)) : '')+
       (o.solicitante? dt("Solicitante", esc(o.solicitante)) : '')+
       dt("Máquina", maquinaLinkHtml(o.clienteId, o.maquinaId, o.maquina))+dt("Aberta em", dateBR(o.dataAbertura))+
-      (descontoOS>0? dt("Valor (sem desconto)", money(subtotalOS))+dt("Desconto", "- "+money(descontoOS)) : '')+
+      (descontoOS>0? dt("Valor (sem desconto)", money(subtotalOS))+dt(descontoLabelText(o.descontoTipo, o.descontoValor), "- "+money(descontoOS)) : '')+
       dt("Total"+(descontoOS>0? " (com desconto)":""), money(o.valorTotal))+dt("Conclusão", o.dataConclusao? dateBR(o.dataConclusao):"—")+
       dt("Forma de pagamento", esc(formaPagamentoLabel(o)))+
       '</div>';
@@ -5080,9 +5123,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         '<span>'+esc(mp.symbol)+'</span><span>'+esc(mp.number)+'</span>'+
       '</span></td>';
   }
-  function printItemsTable(items, total, formaPagamento, desconto){
+  function printItemsTable(items, total, formaPagamento, desconto, descontoLabel){
     var descontoNum = Number(desconto)||0;
     var subtotalItens = total + descontoNum;
+    var descontoLabelFinal = descontoLabel || 'Desconto';
     var rows = (items||[]).map(function(i, idx){
       var bg = idx % 2 === 1 ? 'background:#f4f6f0;' : '';
       return '<tr style="'+bg+'">'+
@@ -5111,7 +5155,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           '<span>Valor (sem desconto)</span><span style="font-weight:600;">'+money(subtotalItens)+'</span>'+
         '</div>'+
         '<div style="display:flex;justify-content:space-between;align-items:center;background:#f3f2ec;padding:8px 18px 8px;font-size:12px;color:#454a3d;">'+
-          '<span>Desconto</span><span style="font-weight:600;">- '+money(descontoNum)+'</span>'+
+          '<span>'+esc(descontoLabelFinal)+'</span><span style="font-weight:600;">- '+money(descontoNum)+'</span>'+
         '</div>'
       ) : '')+
       '<div style="display:flex;justify-content:flex-end;align-items:baseline;background:#122e14;color:#fff;padding:13px 18px;">'+
@@ -5149,7 +5193,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       printHeaderBlock(opts)+
       printInfoPanel(opts, dataLinha)+
       printMachineBadge(opts.maquina, opts.titulo)+
-      printItemsTable(opts.itens, total, opts.formaPagamento, opts.desconto)+
+      printItemsTable(opts.itens, total, opts.formaPagamento, opts.desconto, descontoLabelText(opts.descontoTipo, opts.descontoValor))+
       printObsBox(opts.observacoes)+
       printSignatureFooter();
     return html;
@@ -5340,7 +5384,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       doc.text(money(subtotalPdf), right-5, y+4.7, {align:'right'});
       y += 7;
       doc.setFillColor(243,242,236); doc.rect(left, y, right-left, 7, 'F');
-      doc.setFont(undefined,'normal'); doc.text('Desconto', left+5, y+4.7);
+      doc.setFont(undefined,'normal'); doc.text(descontoLabelText(opts.descontoTipo, opts.descontoValor), left+5, y+4.7);
       doc.setFont(undefined,'bold');
       doc.text('- '+money(descontoPdf), right-5, y+4.7, {align:'right'});
       y += 7;
@@ -6132,7 +6176,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       var o=findOrcamento(id); if(!o){ customAlert('Não encontrei esse orçamento — tente fechar e abrir de novo.'); return; }
       var opts = {
         tipoDoc:"Orçamento", numero:o.numero, clienteNome:o.clienteNome, titulo:o.titulo||"", solicitante:o.solicitante||"", maquina:o.maquina,
-        dataISO:o.data, itens:o.itensServico, desconto:o.desconto,
+        dataISO:o.data, itens:o.itensServico, desconto:o.desconto, descontoTipo:o.descontoTipo, descontoValor:o.descontoValor,
         observacoes:o.obs,
         extraLine: o.semValidade ? null : {label:"Validade", value: o.validade+" dias"},
         formaPagamento: formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):""
@@ -6150,7 +6194,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       var itens = (o.itens && o.itens.length) ? o.itens : [{desc:"Serviço executado", qtd:1, valor:o.valorTotal, tipo:"servico"}];
       var opts = {
         tipoDoc:"OS", numero:o.numero, clienteNome:o.clienteNome, titulo:o.titulo||"", solicitante:o.solicitante||"", maquina:o.maquina,
-        dataISO:o.dataAbertura, itens:itens, desconto:o.desconto||0, observacoes:o.descricao,
+        dataISO:o.dataAbertura, itens:itens, desconto:o.desconto||0, descontoTipo:o.descontoTipo, descontoValor:o.descontoValor, observacoes:o.descricao,
         extraLine:{label:"Status", value:OS_STATUS[o.status].label}, formaPagamento: formaPagamentoLabel(o)!=="—"?formaPagamentoLabel(o):""
       };
       var html = printDocument(opts);
