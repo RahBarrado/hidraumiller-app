@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>HidrauMiller</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -289,6 +290,7 @@
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13px;margin-bottom:16px;}
   .detail-grid .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;}
   .detail-grid .v{font-weight:600;margin-top:2px;}
+  .detail-link{background:none;border:none;padding:0;margin:0;font:inherit;font-weight:600;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;text-align:left;}
   .actions-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
 
   .toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;align-items:center;}
@@ -310,7 +312,7 @@
   table.simple.row-click tr[data-open-os]:hover, table.simple.row-click tr[data-open-pagamento]:hover, table.simple.row-click tr[data-open-despesa]:hover,
   table.simple.row-click tr[data-open-orc]:hover, table.simple.row-click tr[data-open-orc-from-cliente]:hover, table.simple.row-click tr[data-open-os-from-cliente]:hover,
   table.simple.row-click tr[data-open-pagamento-from-os]:hover, table.simple.row-click tr[data-open-nf-from-os]:hover,
-  table.simple.row-click tr[data-open-fornecedor]:hover{background:var(--surface-2);}
+  table.simple.row-click tr[data-open-fornecedor]:hover, table.simple.row-click tr[data-goto-maquina]:hover{background:var(--surface-2);}
 
   @media (max-width:900px){
     .kpi-grid{grid-template-columns:1fr 1fr;}
@@ -456,14 +458,10 @@
           <button type="button" class="btn ghost sm" id="btn-cliente-importar-vcf">📄 Importar contato (.vcf)</button>
           <input type="file" id="cliente-vcf-input" accept=".vcf,text/vcard,text/x-vcard" hidden>
         </div>
-        <div class="hint" id="cliente-importar-hint" style="margin-bottom:4px;">Puxa nome/telefone direto do seu celular quando o navegador permite, ou de um arquivo .vcf exportado da agenda (funciona em qualquer aparelho).</div>
+        <div class="hint" id="cliente-importar-hint" style="margin-bottom:4px;">Puxa nome/telefone direto do seu celular quando o navegador permite, ou de um arquivo .vcf exportado da agenda, e já cadastra como responsável (funciona em qualquer aparelho).</div>
         <div class="field"><label>Nome / Razão social</label><input name="nome" class="uc" required></div>
-        <div class="field"><label>Telefone / WhatsApp</label><input name="telefone" placeholder="(99) 99999-9999"></div>
         <div class="field"><label>Endereço</label><input name="endereco" placeholder="Zona rural, cidade - UF"></div>
-        <div class="grid2">
-          <div class="field"><label>CPF / CNPJ</label><input name="documento"></div>
-          <div class="field"><label>E-mail</label><input name="email" type="email"></div>
-        </div>
+        <div class="field"><label>CPF / CNPJ</label><input name="documento"></div>
         <div class="field"><label>Solicita nota fiscal?</label>
           <select name="solicitaNF">
             <option value="sim">Sim, sempre</option>
@@ -501,6 +499,8 @@
       <div class="dialog-body">
         <div class="field"><label>Máquina / equipamento</label><input name="nome" class="uc" placeholder="Ex: Trator MF 275" required></div>
         <div class="field"><label>Nº de série / chassi (opcional)</label><input name="numeroSerie"></div>
+        <div class="field"><label>Revisar a cada (meses)</label><input name="revisarMeses" type="number" min="0" step="1" value="6"></div>
+        <div class="hint" style="margin-top:-6px;">Usado pro lembrete de manutenção preventiva no Painel, contado a partir da data da última OS dessa máquina. Deixe em 0 para não lembrar dessa máquina.</div>
         <div class="field"><label>Observações</label><textarea name="obs" placeholder="Ano, detalhes, histórico anterior..."></textarea></div>
       </div>
       <div class="dialog-foot">
@@ -535,7 +535,7 @@
           <div class="hint" style="margin-top:5px;">A lista vem do cadastro do cliente selecionado. Se só tiver 1 cadastrado, já vem selecionado sozinho. Não achou quem procura? Escolha "+ Novo solicitante..." pra cadastrar na hora (com celular e e-mail, se quiser).</div>
         </div>
         <div class="grid2">
-          <div class="field"><label>Número</label><input name="numero" required readonly title="Gerado automaticamente, em sequência - não pode ser editado."></div>
+          <div class="field"><label>Número</label><input name="numero" id="orc-numero-input" required readonly></div>
           <div class="field"><label>Data</label><input name="data" type="date" required></div>
         </div>
         <div class="grid2">
@@ -608,6 +608,7 @@
       <input type="hidden" name="id">
       <div class="dialog-body">
         <div id="pagamento-ultima-alteracao"></div>
+        <div class="hint" id="pagamento-forced-hint" hidden style="margin-top:-6px;margin-bottom:10px;background:#fff7e0;border:1px solid #e8d38a;padding:8px 10px;border-radius:6px;">🔒 Defina a forma de pagamento e o vencimento para concluir a geração da OS — esse passo é obrigatório e a janela não pode ser fechada sem salvar.</div>
         <div class="field"><label>Ordem de serviço</label><select name="osId" id="pag-os-select" required></select></div>
         <div id="pagamento-os-info" hidden></div>
         <div class="grid2">
@@ -829,6 +830,8 @@
           <div class="field"><label>Endereço (opcional)</label><input name="endereco"></div>
         </div>
         <div class="hint">Esses dados aparecem no cabeçalho e no rodapé dos PDFs de orçamento e OS.</div>
+        <div class="field"><label>Telefone/WhatsApp do contador (opcional)</label><input name="contadorTelefone" placeholder="Ex: (38) 99999-0000"></div>
+        <div class="hint">Usado pelo botão "Enviar por WhatsApp" do relatório de Notas Fiscais, em Notas Fiscais.</div>
       </div>
       <div class="dialog-foot">
         <button type="button" class="btn" data-close>Cancelar</button>
@@ -889,14 +892,27 @@
   </div>
 </div>
 
+<!-- Só aparece num aparelho novo (sem nenhum dado salvo localmente ainda),
+     logo após o login, enquanto confirma com a nuvem se já existem dados da
+     empresa pra puxar - evita a pessoa começar a cadastrar algo achando que
+     o aparelho está "vazio" de verdade, quando na real é só questão de
+     segundos pra sincronizar o que já existe (ver runSyncGate()). -->
+<div id="sync-gate" class="auth-gate" hidden>
+  <div class="auth-box">
+    <div class="auth-emoji">☁️</div>
+    <h2>Sincronizando</h2>
+    <div class="hint" id="sync-gate-subtitle" style="margin-bottom:16px;">Conferindo se já existem dados da empresa na nuvem...</div>
+    <div class="auth-error" id="sync-gate-error" hidden></div>
+    <button type="button" class="btn ghost" id="btn-sync-gate-retry" hidden style="width:100%;margin-top:10px;">Tentar novamente</button>
+  </div>
+</div>
+
 <div id="print-doc"></div>
 
 <div id="data-stores" hidden>
   <div id="store-config" class="store"><div class="rec" data-key="config" data-json='{"id": "config", "nome": "HidrauMiller", "responsavel": "Miller Piva", "telefone": "(38) 99849-7738", "email": "millerpiva@gmail.com", "cidade": "Unaí MG", "cnpj": "", "endereco": "", "pixChave": "(38) 99999-1234", "pixBanco": "Banco do Brasil", "pixTitular": "Miller Piva Ltda"}'></div></div>
-  <div id="store-clientes" class="store"><div class="rec" data-key="cli_1" data-json='{"id": "cli_1", "nome": "MAIRON MANICA", "telefone": "(38) 99876-5432", "propriedade": "", "endereco": "", "documento": "", "email": "", "obs": "", "maquinas": [{"id": "maq_1", "nome": "ESCAVADEIRA VOLVO 140 PRIME", "numeroSerie": "", "obs": ""}, {"id": "maq_2", "nome": "RETROESCAVADEIRA CASE 580", "numeroSerie": "", "obs": ""}, {"id": "maq_3", "nome": "MINICARREGADEIRA BOBCAT S70", "numeroSerie": "", "obs": ""}]}'></div>
-  </div>
-  <div id="store-orcamentos" class="store"><div class="rec" data-key="orc_1" data-json='{"id": "orc_1", "numero": "ORC-2026-00193", "clienteId": "cli_1", "clienteNome": "MAIRON MANICA", "maquina": "ESCAVADEIRA VOLVO 140 PRIME", "maquinaId": "maq_1", "data": "2026-08-27", "validade": 5, "semValidade": true, "formaPagamento": "A combinar", "itensServico": [{"desc": "BLOCO DIREITO P1 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "BLOCO ESQUERDO P2 K3V63", "qtd": 1, "valor": 1830, "tipo": "produto"}, {"desc": "KIT REPARO BOMBA K3V63", "qtd": 1, "valor": 570, "tipo": "produto"}, {"desc": "RETENTOR DA BOMBA K3V63", "qtd": 1, "valor": 180, "tipo": "produto"}, {"desc": "VÁLVULA SOLENÓIDE PROPORCIONAL", "qtd": 1, "valor": 1930, "tipo": "produto"}, {"desc": "SUPORTE DO PLATÔ", "qtd": 1, "valor": 1970, "tipo": "produto"}, {"desc": "LAPIDAR SUPORTE DO PLATÔ", "qtd": 1, "valor": 600, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P1", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "LAPIDAR CONJUNTO DE PISTÕES BOMBA P2", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO E PLACA DIREITA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "ASSENTAMENTO DO BLOCO E PLACA ESQUERDA", "qtd": 1, "valor": 300, "tipo": "servico"}, {"desc": "DESMONTAR E MONTAR A BOMBA K3V63, TROCAR REPARO,REVISAR E RETIFICAR CONTROLADORAS, REVISAR BOMBA DE CARGA", "qtd": 1, "valor": 3000, "tipo": "servico"}], "listaCompras": [], "obs": "", "desconto": 0, "status": "rascunho", "historico": [{"ts": "2026-08-27T12:00:00.000Z", "texto": "Orçamento criado — total R$ 13.110,00 · 12 item(ns)"}]}'></div>
-  </div>
+  <div id="store-clientes" class="store"></div>
+  <div id="store-orcamentos" class="store"></div>
   <div id="store-os" class="store">
   </div>
   <div id="store-pagamentos" class="store">
@@ -1326,7 +1342,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     (list||[]).forEach(function(r){ var m=/(\d+)$/.exec(r.numero||""); if(m) max=Math.max(max,parseInt(m[1],10)); });
     return prefix+"-"+year+"-"+String(max+1).padStart(padLen||4,'0');
   }
-  function defaultConfig(){ return {id:"config", nome:"HidrauMiller", responsavel:"Miller Piva", telefone:"(38) 99849-7738", email:"millerpiva@gmail.com", cidade:"Unaí MG", cnpj:"", endereco:"", categoriasCustom:[], markupPadrao:40, margemPadrao:30, custoMargemHabilitado:false}; }
+  function defaultConfig(){ return {id:"config", nome:"HidrauMiller", responsavel:"Miller Piva", telefone:"(38) 99849-7738", email:"millerpiva@gmail.com", cidade:"Unaí MG", cnpj:"", endereco:"", contadorTelefone:"", categoriasCustom:[], markupPadrao:40, margemPadrao:30, custoMargemHabilitado:false}; }
 
   /* ---------------- store <-> DOM ---------------- */
   function storeEl(name){ return document.getElementById('store-'+name); }
@@ -1371,6 +1387,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
      tanto na versão web quanto dentro do app Android (mesmo motor). */
   var LS_PREFIX = 'hidraumiller_v1_';
   var STORE_NAMES = ['config','clientes','orcamentos','os','pagamentos','nf','fornecedores','despesas','produtos'];
+  // Usado pelo sync-gate (runSyncGate, lá embaixo perto da sincronização com
+  // a nuvem): true só quando este aparelho/navegador nunca teve nenhum dado
+  // salvo localmente (instalação/contexto genuinamente novo) - um aparelho
+  // que já tem algo salvo (mesmo que pouco) não entra no gate, pra não criar
+  // espera desnecessária pra quem já usa o app normalmente.
+  function isLocalDataEmpty(){
+    return STORE_NAMES.filter(function(n){ return n!=='config'; }).every(function(name){
+      try{
+        var raw = localStorage.getItem(LS_PREFIX+name);
+        if(raw==null) return true;
+        var arr = JSON.parse(raw);
+        return !Array.isArray(arr) || arr.length===0;
+      }catch(e){ return true; }
+    });
+  }
   function persistStore(name){
     try{ localStorage.setItem(LS_PREFIX+name, JSON.stringify(loadList(name))); }
     catch(e){ /* localStorage indisponível (modo privado, cota cheia, etc.) - os dados continuam válidos só durante esta sessão */ }
@@ -1755,6 +1786,31 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       });
     });
   }
+  var MANUTENCAO_NOTIF_ID_6H = 90071, MANUTENCAO_NOTIF_ID_19H = 90072;
+  var LAST_MANUTENCAO_SCHEDULE_AT = 0;
+  // Mesmo esquema do alerta de pagamento em atraso acima (2 notificações
+  // diárias, 6h/19h), só que pra manutenção preventiva vencida.
+  function scheduleManutencaoNotifications(force){
+    if(!isNativeApp() || !window.Capacitor || !window.Capacitor.Plugins || !window.Capacitor.Plugins.LocalNotifications) return;
+    var now = Date.now();
+    if(!force && (now-LAST_MANUTENCAO_SCHEDULE_AT) < 60*1000) return;
+    LAST_MANUTENCAO_SCHEDULE_AT = now;
+    var LN = window.Capacitor.Plugins.LocalNotifications;
+    ensureNotificationPermission().then(function(granted){
+      if(!granted) return;
+      LN.cancel({ notifications:[{id:MANUTENCAO_NOTIF_ID_6H},{id:MANUTENCAO_NOTIF_ID_19H}] }).catch(function(){}).then(function(){
+        var itens = computeAlertasManutencao();
+        if(!itens.length) return; // nada vencido agora - não reagenda nada
+        var texto = (itens.length===1
+          ? '1 máquina está com a revisão vencida'
+          : itens.length+' máquinas estão com a revisão vencida')+'. Confira o Painel.';
+        LN.schedule({ notifications:[
+          { id:MANUTENCAO_NOTIF_ID_6H, title:'🔧 Manutenção preventiva vencida', body:texto, schedule:{ on:{hour:6,minute:0}, repeats:true, allowWhileIdle:true } },
+          { id:MANUTENCAO_NOTIF_ID_19H, title:'🔧 Manutenção preventiva vencida', body:texto, schedule:{ on:{hour:19,minute:0}, repeats:true, allowWhileIdle:true } }
+        ]}).catch(function(e){ console.error('Falha ao agendar alerta de manutenção:', e); });
+      });
+    });
+  }
   var NF_STATUS = { pendente:{label:"Pendente",cls:"warn"}, emitida:{label:"Emitida",cls:"good"} };
   var DESPESA_CATEGORIAS = {
     fornecedor:{label:"Compra de fornecedor", ic:"📦"}, energia:{label:"Energia elétrica", ic:"⚡"},
@@ -1813,6 +1869,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       if(venc && venc<=limiteISO){
         itens.push({ id:o.id, tipo:'orcamento', desc:(o.clienteNome||'')+' · '+o.numero, valor: itemsTotal(o.itensServico)-(Number(o.desconto)||0), vencimento:venc });
       }
+    });
+    itens.sort(function(a,b){return (a.vencimento||"").localeCompare(b.vencimento||"");});
+    return itens;
+  }
+  function addMonthsISO(iso, meses){
+    var d = new Date(iso+'T00:00:00');
+    d.setMonth(d.getMonth()+(Number(meses)||0));
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  // Lembrete de manutenção preventiva por máquina: pra cada máquina com um
+  // intervalo de revisão definido (revisarMeses > 0) e que já tenha pelo
+  // menos uma OS registrada, considera "vencida" quando já passou esse
+  // intervalo desde a ABERTURA da OS mais recente daquela máquina. Máquina
+  // sem nenhuma OS ainda fica de fora - não tem uma data de referência pra
+  // contar a partir daí.
+  function computeAlertasManutencao(){
+    var itens = [];
+    DB.clientes.forEach(function(c){
+      var maquinas = c.maquinas||[];
+      maquinas.forEach(function(m){
+        var meses = Number(m.revisarMeses)||0;
+        if(meses<=0) return;
+        var mOS = DB.os.filter(function(o){ return o.clienteId===c.id && itemPertenceMaquina(o, m, maquinas); });
+        if(!mOS.length) return;
+        var ultimo = mOS.slice().sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");})[0];
+        if(!ultimo.dataAbertura) return;
+        var vencIso = addMonthsISO(ultimo.dataAbertura, meses);
+        if(vencIso<=todayISO()){
+          itens.push({ clienteId:c.id, clienteNome:c.nome, maquinaId:m.id, maquinaNome:m.nome, ultimoServico:ultimo.dataAbertura, revisarMeses:meses, vencimento:vencIso });
+        }
+      });
     });
     itens.sort(function(a,b){return (a.vencimento||"").localeCompare(b.vencimento||"");});
     return itens;
@@ -1926,6 +2013,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return customConfirm(message, {alertOnly:true, okLabel:'OK', danger:false});
   }
   function attemptCloseDialog(dlg){
+    if(dlg.dataset.forced==='1'){
+      toast('Preencha e salve a forma de pagamento e o vencimento para continuar.');
+      return;
+    }
     if(!isDialogDirty(dlg)){ dlg.dataset.dirty = ''; dlg.close(); return; }
     customConfirm('Você tem alterações não salvas. Sair mesmo assim?', {okLabel:'Sair sem salvar'}).then(function(ok){
       if(!ok) return;
@@ -1951,6 +2042,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     dlg.addEventListener('click', function(e){ if(e.target===dlg) attemptCloseDialog(dlg); });
     dlg.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', function(){ attemptCloseDialog(dlg); }); });
     dlg.addEventListener('cancel', function(e){
+      if(dlg.dataset.forced==='1'){
+        e.preventDefault();
+        toast('Preencha e salve a forma de pagamento e o vencimento para continuar.');
+        return;
+      }
       if(isDialogDirty(dlg)){
         e.preventDefault();
         customConfirm('Você tem alterações não salvas. Sair mesmo assim?', {okLabel:'Sair sem salvar'}).then(function(ok){
@@ -1959,6 +2055,34 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       }
     });
   });
+
+  /* ---------------- aviso claro quando falta preencher um campo obrigatório ----------------
+     Antes disso, quando faltava preencher um campo obrigatório (ex: "Serviço
+     solicitado" vazio), o navegador simplesmente bloqueava o clique em
+     "Salvar" sozinho, sem disparar o submit - só aparecia uma bolha pequena
+     e padrão do navegador em cima do campo, fácil de não notar (a pessoa
+     achava que tinha salvo, fechava o formulário, e nada era salvo de
+     verdade). O evento nativo "invalid" não sobe (bubble) pelo DOM, mas
+     ainda passa pela fase de captura - por isso o listener abaixo é
+     registrado com "true" (capture), pegando o aviso em qualquer formulário
+     do app, sem precisar mexer em cada um deles. Substitui a bolha nativa
+     por um customAlert dizendo especificamente qual campo falta preencher,
+     rola até ele e foca nele - e evita empilhar vários alertas quando mais
+     de um campo está inválido ao mesmo tempo. */
+  var avisandoCampoObrigatorio = false;
+  document.addEventListener('invalid', function(e){
+    e.preventDefault();
+    if(avisandoCampoObrigatorio) return;
+    avisandoCampoObrigatorio = true;
+    var el = e.target;
+    var fieldWrap = el.closest ? el.closest('.field') : null;
+    var labelEl = fieldWrap ? fieldWrap.querySelector('label') : null;
+    var nomeCampo = labelEl ? labelEl.textContent.trim() : (el.name || 'um campo obrigatório');
+    try{ el.scrollIntoView({block:'center'}); el.focus(); }catch(ex){}
+    customAlert('Não foi possível salvar: preencha o campo "'+nomeCampo+'" antes de continuar.').then(function(){
+      avisandoCampoObrigatorio = false;
+    });
+  }, true);
 
   /* ---------------- render dispatch ---------------- */
   function render(){
@@ -1994,6 +2118,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     // jeito mais simples de manter o conteúdo do alerta em dia sem
     // depender de um plugin extra só pra "acordar" o app em segundo plano.
     scheduleOverdueNotifications();
+    scheduleManutencaoNotifications();
 
     var html = overdueBannerHtml();
     html += '<div class="kpi-grid">'+
@@ -2008,6 +2133,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var alertasReceber = alertas.filter(function(a){ return a.tipo==='receber'; });
     var alertasPagar = alertas.filter(function(a){ return a.tipo==='pagar'; });
     var alertasOrcamento = alertas.filter(function(a){ return a.tipo==='orcamento'; });
+    var alertasManutencao = computeAlertasManutencao();
 
     html += '<div class="panel"><div class="panel-head"><h2>🟡 Orçamentos vencendo sem resposta</h2></div><div class="panel-body">';
     if(!alertasOrcamento.length) html += emptyState("✅","Nenhum orçamento vencendo","Orçamentos em rascunho/enviados aparecem aqui quando a validade estiver perto de vencer (ou já vencida) e o cliente ainda não respondeu.");
@@ -2032,6 +2158,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else { html += '<table class="simple row-click"><tr><th>Descrição</th><th>Vencimento</th><th>Valor</th><th></th></tr>'+
       alertasPagar.map(function(a){
         return '<tr data-open-despesa="'+esc(a.id)+'" title="Abrir despesa"><td>'+esc(a.desc)+'</td><td class="num">'+dateBR(a.vencimento)+'</td><td class="num">'+money(a.valor)+'</td><td>'+pill(alertaPill(a.vencimento))+'</td></tr>';
+      }).join('')+
+      '</table>'; }
+    html += '</div></div>';
+
+    html += '<div class="panel"><div class="panel-head"><h2>🔧 Manutenção preventiva vencida</h2></div><div class="panel-body">';
+    if(!alertasManutencao.length) html += emptyState("✅","Nenhuma revisão vencida","Aparece aqui quando uma máquina passar do intervalo de revisão definido nela (contado a partir da última OS registrada).");
+    else { html += '<table class="simple row-click"><tr><th>Cliente / Máquina</th><th>Último serviço</th><th>Vencida desde</th><th></th></tr>'+
+      alertasManutencao.map(function(a){
+        return '<tr data-goto-maquina="'+esc(a.clienteId)+'|'+esc(a.maquinaId)+'" title="Ver histórico desta máquina"><td>'+esc(a.clienteNome)+' · '+esc(a.maquinaNome)+'</td><td class="num">'+dateBR(a.ultimoServico)+'</td><td class="num">'+dateBR(a.vencimento)+'</td><td>'+pill(alertaPill(a.vencimento))+'</td></tr>';
       }).join('')+
       '</table>'; }
     html += '</div></div>';
@@ -2062,27 +2197,99 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     return '<div class="'+cls+'"'+navAttr+'><div class="label">'+esc(label)+'</div><div class="value '+(accentClass||'')+'">'+val+'</div>'+(sub?'<div class="kpi-sub">'+sub+'</div>':'')+'</div>';
   }
   function emptyState(ic,title,sub){ return '<div class="empty"><div class="ic">'+ic+'</div><div style="font-weight:700;">'+esc(title)+'</div><p>'+esc(sub)+'</p></div>'; }
+  // Telefone/e-mail saíram do cadastro do cliente (só ficam nos
+  // responsáveis/solicitantes agora, pedido da Raissa: "fica mais
+  // direcionado" já que quem atende o telefone é uma pessoa, não a
+  // propriedade/empresa em si). Esses dois helpers pegam o 1º responsável
+  // cadastrado pra usar em lugares que antes mostravam o telefone do
+  // cliente direto (card da lista, busca, lixeira) - cliente sem nenhum
+  // responsável ainda simplesmente não tem telefone pra mostrar.
+  function clientePrimeiroResponsavel(c){ return (c&&c.solicitantes&&c.solicitantes[0])||null; }
+  function clientePrimeiroTelefone(c){ var s=clientePrimeiroResponsavel(c); return s?(s.telefone||""):""; }
+  // Telefone pra usar no envio por WhatsApp: prioriza o responsável marcado
+  // como solicitante NO PRÓPRIO orçamento/OS (fica mais direcionado, pedido
+  // da Raissa) - com fallback pro nome (registros legados sem
+  // solicitanteId), e por último pro 1º responsável cadastrado no cliente
+  // (ex: cobrança consolidada, que não é de um orçamento/OS específico).
+  function solicitanteTelefone(entidade, cliente){
+    if(!cliente) return "";
+    var solicitantes = cliente.solicitantes||[];
+    var s = null;
+    if(entidade){
+      if(entidade.solicitanteId) s = solicitantes.find(function(x){return x.id===entidade.solicitanteId;});
+      if(!s && entidade.solicitante) s = solicitantes.find(function(x){return x.nome && x.nome.trim().toUpperCase()===entidade.solicitante.trim().toUpperCase();});
+    }
+    if(!s) s = clientePrimeiroResponsavel(cliente);
+    return s ? (s.telefone||"") : "";
+  }
 
   /* ---------------- CLIENTES ---------------- */
+  function clientesModoChipsHtml(){
+    return '<div class="chip-filter" style="margin-bottom:14px;">'+
+      '<button type="button" class="chip'+(CLIENTES_MODO==='lista'?' active':'')+'" data-clientes-modo="lista">Lista</button>'+
+      '<button type="button" class="chip'+(CLIENTES_MODO==='consumo'?' active':'')+'" data-clientes-modo="consumo">📊 Consumo</button>'+
+      '</div>';
+  }
   function renderClientes(){
-    if(!DB.clientes.length) return emptyState("👤","Nenhum cliente cadastrado","Clique em + Novo para cadastrar o primeiro cliente.");
+    var modoChips = clientesModoChipsHtml();
+    if(!DB.clientes.length) return modoChips+emptyState("👤","Nenhum cliente cadastrado","Clique em + Novo para cadastrar o primeiro cliente.");
+    if(CLIENTES_MODO==='consumo') return modoChips+renderClientesConsumo();
     var list = DB.clientes.slice().sort(function(a,b){return a.nome.localeCompare(b.nome);});
     if(ITEM_FILTROS.cliente){
       var clientePicked = list.find(function(x){return x.id===ITEM_FILTROS.cliente;});
       list = clientePicked ? [clientePicked] : [];
     }
     var filtroTags = activeFiltrosTagsHtml('cliente');
-    if(!list.length) return filtroTags+emptyState("👤","Nenhum cliente encontrado","Limpe o filtro pra ver todos os clientes.");
-    return filtroTags+'<div class="rec-list">'+list.map(function(c){
+    if(!list.length) return modoChips+filtroTags+emptyState("👤","Nenhum cliente encontrado","Limpe o filtro pra ver todos os clientes.");
+    return modoChips+filtroTags+'<div class="rec-list">'+list.map(function(c){
       var nOrc = DB.orcamentos.filter(function(o){return o.clienteId===c.id;}).length;
       var clienteOS = DB.os.filter(function(o){return o.clienteId===c.id;}).sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");});
       var nOS = clienteOS.length, ultimo = clienteOS[0];
       var nMaquinas = (c.maquinas||[]).length;
+      var telefonePrincipal = clientePrimeiroTelefone(c);
       return '<div class="rec-card" data-open-cliente-detail="'+c.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(c.nome)+'</div></div></div>'+
-        '<div class="rec-meta"><span>📞 '+esc(c.telefone||"—")+'</span><span>🚜 '+nMaquinas+' máquina(s)</span><span>'+nOrc+' orçamento(s) · '+nOS+' OS</span>'+
+        '<div class="rec-meta">'+(telefonePrincipal? '<span>📞 '+esc(telefonePrincipal)+'</span>' : '')+'<span>🚜 '+nMaquinas+' máquina(s)</span><span>'+nOrc+' orçamento(s) · '+nOS+' OS</span>'+
         (ultimo? '<span>Último serviço: '+dateBR(ultimo.dataAbertura)+' · '+OS_STATUS[ultimo.status].label+'</span>':'')+
         '</div></div>';
     }).join('')+'</div>';
+  }
+  // Relatório de consumo: quem mais fatura (últimos 12 meses, somando o
+  // valor das OS abertas nesse período) e quem está "sumido" (2+ meses sem
+  // nenhum orçamento nem OS - inclui quem nunca teve nenhum dos dois).
+  function computeClientesConsumo(){
+    var desdeISO = addMonthsISO(todayISO(), -12);
+    var limiteSumido = addMonthsISO(todayISO(), -2);
+    var linhas = DB.clientes.map(function(c){
+      var cOS = DB.os.filter(function(o){return o.clienteId===c.id;});
+      var cOrc = DB.orcamentos.filter(function(o){return o.clienteId===c.id;});
+      var consumo12m = cOS.filter(function(o){return o.dataAbertura && o.dataAbertura>=desdeISO;})
+        .reduce(function(s,o){return s+(Number(o.valorTotal)||0);},0);
+      var datas = cOS.map(function(o){return o.dataAbertura;}).concat(cOrc.map(function(o){return o.data;})).filter(Boolean).sort();
+      var ultimaAtividade = datas.length ? datas[datas.length-1] : null;
+      var sumido = !ultimaAtividade || ultimaAtividade < limiteSumido;
+      return { clienteId:c.id, clienteNome:c.nome, consumo12m:consumo12m, ultimaAtividade:ultimaAtividade, sumido:sumido };
+    });
+    var top = linhas.filter(function(l){return l.consumo12m>0;}).sort(function(a,b){return b.consumo12m-a.consumo12m;}).slice(0,10);
+    var sumidos = linhas.filter(function(l){return l.sumido;}).sort(function(a,b){return (a.ultimaAtividade||"").localeCompare(b.ultimaAtividade||"");});
+    return { top:top, sumidos:sumidos };
+  }
+  function renderClientesConsumo(){
+    var dados = computeClientesConsumo();
+    var html = '<p class="hint" style="margin-top:-6px;margin-bottom:16px;">Consumo considera o valor das Ordens de Serviço abertas nos últimos 12 meses. "Sumido" é quem não tem nenhum orçamento nem OS há 2 meses ou mais (ou nunca teve nenhum dos dois).</p>';
+    html += '<div class="section-title">🏆 Top clientes (últimos 12 meses)</div>';
+    if(!dados.top.length) html += emptyState("📊","Nenhum faturamento nos últimos 12 meses","Assim que houver Ordens de Serviço abertas nesse período, o ranking aparece aqui.");
+    else html += '<table class="simple row-click"><tr><th>Cliente</th><th>Faturado (12m)</th></tr>'+
+      dados.top.map(function(l,idx){
+        return '<tr data-open-cliente-detail="'+esc(l.clienteId)+'" title="Ver cadastro do cliente"><td>'+(idx+1)+'º · '+esc(l.clienteNome)+'</td><td class="num">'+money(l.consumo12m)+'</td></tr>';
+      }).join('')+'</table>';
+
+    html += '<div class="section-title" style="margin-top:20px;">👻 Clientes sumidos (2+ meses sem orçamento/OS)</div>';
+    if(!dados.sumidos.length) html += emptyState("✅","Nenhum cliente sumido","Todo mundo teve orçamento ou OS nos últimos 2 meses.");
+    else html += '<table class="simple row-click"><tr><th>Cliente</th><th>Última atividade</th></tr>'+
+      dados.sumidos.map(function(l){
+        return '<tr data-open-cliente-detail="'+esc(l.clienteId)+'" title="Ver cadastro do cliente"><td>'+esc(l.clienteNome)+'</td><td class="num">'+(l.ultimaAtividade? dateBR(l.ultimaAtividade) : 'Nunca teve orçamento/OS')+'</td></tr>';
+      }).join('')+'</table>';
+    return html;
   }
   function fillClienteSelect(sel, selectedId){
     sel.innerHTML = '<option value="">— selecione —</option>'+
@@ -2167,12 +2374,20 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       '<button type="button" class="btn ghost sm" data-remove-solicitante-row style="flex:none;padding:6px 10px;">×</button>'+
     '</div>';
   }
+  // Telefone/e-mail do cliente saíram do formulário (agora só existem dentro
+  // de cada responsável) - então "Importar da agenda"/.vcf, que antes só
+  // preenchia esses dois campos, agora joga o contato importado direto como
+  // uma linha nova de responsável (a pessoa pode renomear/ajustar depois).
+  function adicionarResponsavelImportado(nome, telefone, email){
+    if(!telefone && !email) return;
+    document.getElementById('cliente-solicitantes-rows').insertAdjacentHTML('beforeend', clienteSolicitanteRowHtml({id:'', nome:nome||'', telefone:telefone||'', email:email||''}));
+  }
   function openClienteDialog(id){
     var dlg=document.getElementById('dlg-cliente'), form=document.getElementById('form-cliente');
-    var c = id ? findCliente(id) : {id:uid('cli'), nome:"",telefone:"",endereco:"",documento:"",email:"",obs:"",maquinas:[],solicitantes:[],solicitaNF:"as_vezes"};
+    var c = id ? findCliente(id) : {id:uid('cli'), nome:"",endereco:"",documento:"",obs:"",maquinas:[],solicitantes:[],solicitaNF:"as_vezes"};
     if(!id) LAST_SAVED_CLIENTE_ID = null;
     document.getElementById('dlg-cliente-title').textContent = id? "Editar cliente" : "Novo cliente";
-    ['id','nome','telefone','endereco','documento','email','obs'].forEach(function(k){ if(form[k]) form[k].value = c[k]||""; });
+    ['id','nome','endereco','documento','obs'].forEach(function(k){ if(form[k]) form[k].value = c[k]||""; });
     form.solicitaNF.value = c.solicitaNF || "as_vezes";
     document.getElementById('cliente-solicitantes-rows').innerHTML = (c.solicitantes||[]).map(clienteSolicitanteRowHtml).join('');
     document.getElementById('btn-del-cliente').hidden = !id;
@@ -2236,9 +2451,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       }
       var form = document.getElementById('form-cliente');
       if(data.nome) form.nome.value = data.nome;
-      if(data.telefone) form.telefone.value = data.telefone;
-      if(data.email) form.email.value = data.email;
       if(data.endereco) form.endereco.value = data.endereco;
+      adicionarResponsavelImportado(data.nome, data.telefone, data.email);
       toast('Contato importado do arquivo'+(data._totalContacts>1? ' (o arquivo tinha '+data._totalContacts+' contatos — foi importado o primeiro; repita para os demais)':''));
     };
     reader.readAsText(file);
@@ -2249,9 +2463,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       window.Capacitor.Plugins.Contacts.pickContact({projection:{name:true, phones:true, emails:true}}).then(function(res){
         var c = res && res.contact; if(!c) return;
         var form = document.getElementById('form-cliente');
-        if(c.name && c.name.display) form.nome.value = c.name.display;
-        if(c.phones && c.phones[0] && c.phones[0].number) form.telefone.value = c.phones[0].number;
-        if(c.emails && c.emails[0] && c.emails[0].address) form.email.value = c.emails[0].address;
+        var nomeImportado = c.name && c.name.display ? c.name.display : '';
+        if(nomeImportado) form.nome.value = nomeImportado;
+        var telImportado = c.phones && c.phones[0] && c.phones[0].number ? c.phones[0].number : '';
+        var emailImportado = c.emails && c.emails[0] && c.emails[0].address ? c.emails[0].address : '';
+        adicionarResponsavelImportado(nomeImportado, telImportado, emailImportado);
         toast('Contato importado da agenda');
       }).catch(function(err){
         var msg = (err && err.message) || '';
@@ -2272,9 +2488,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       if(!contacts || !contacts[0]) return;
       var c = contacts[0];
       var form = document.getElementById('form-cliente');
-      if(c.name && c.name[0]) form.nome.value = c.name[0];
-      if(c.tel && c.tel[0]) form.telefone.value = c.tel[0];
-      if(c.email && c.email[0]) form.email.value = c.email[0];
+      var nomeImportado2 = c.name && c.name[0] ? c.name[0] : '';
+      if(nomeImportado2) form.nome.value = nomeImportado2;
+      var telImportado2 = c.tel && c.tel[0] ? c.tel[0] : '';
+      var emailImportado2 = c.email && c.email[0] ? c.email[0] : '';
+      adicionarResponsavelImportado(nomeImportado2, telImportado2, emailImportado2);
       toast('Contato importado da agenda');
     }).catch(function(){
       customAlert('Não consegui acessar a agenda agora. Use o botão "Importar contato (.vcf)" como alternativa.');
@@ -2299,9 +2517,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         email: row.querySelector('.cs-email').value.trim()
       };
     }).filter(Boolean);
-    var obj = { id:f.id.value, nome:f.nome.value.trim().toUpperCase(), telefone:f.telefone.value.trim(),
+    var obj = { id:f.id.value, nome:f.nome.value.trim().toUpperCase(),
       propriedade: existingCliente ? (existingCliente.propriedade||"") : "",
-      endereco:f.endereco.value.trim(), documento:f.documento.value.trim(), email:f.email.value.trim(), obs:f.obs.value.trim(),
+      endereco:f.endereco.value.trim(), documento:f.documento.value.trim(), obs:f.obs.value.trim(),
       solicitaNF: f.solicitaNF.value||"as_vezes",
       maquinas: existingCliente ? (existingCliente.maquinas||[]) : [],
       solicitantes: solicitantes };
@@ -2334,6 +2552,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function openClienteDetail(id){
     CURRENT_CLIENTE_ID = id;
     CURRENT_MAQUINA_FILTER = null;
+    renderClienteDetailBody();
+    document.getElementById('dlg-cliente-detail').showModal();
+  }
+  // Igual openClienteDetail, mas já abre com o histórico filtrado numa
+  // máquina específica - usado quando a Raissa clica no nome da máquina
+  // dentro do detalhe de um orçamento/OS.
+  function openClienteDetailNaMaquina(clienteId, maquinaId){
+    CURRENT_CLIENTE_ID = clienteId;
+    CURRENT_MAQUINA_FILTER = maquinaId||null;
     renderClienteDetailBody();
     document.getElementById('dlg-cliente-detail').showModal();
   }
@@ -2378,11 +2605,18 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
     var solicitaNFLabel = {sim:"Sim, sempre", as_vezes:"Às vezes", nao:"Não solicita"}[c.solicitaNF||"as_vezes"];
     var html = '<div class="detail-grid">'+
-      dt("Telefone", esc(c.telefone||"—"))+
       dt("Endereço", esc(c.endereco||"—"))+dt("CPF/CNPJ", esc(c.documento||"—"))+
       dt("Solicita NF", esc(solicitaNFLabel))+
       '</div>';
     if(c.obs) html += '<div class="hint" style="margin-bottom:14px;">'+esc(c.obs)+'</div>';
+
+    var respList = c.solicitantes||[];
+    html += '<div class="section-title">👤 Responsáveis</div>';
+    if(!respList.length) html += '<div class="hint" style="margin-bottom:14px;">Nenhum responsável cadastrado ainda — telefone e e-mail ficam aqui, dentro de cada responsável (use "Editar dados do cliente" para adicionar).</div>';
+    else html += '<div class="rec-list" style="margin-bottom:14px;">'+respList.map(function(s){
+      return '<div style="font-size:13px;padding:8px 0;border-bottom:1px solid var(--line);"><b>'+esc(s.nome)+'</b>'+
+        (s.telefone? ' · 📞 '+esc(s.telefone) : '')+(s.email? ' · ✉️ '+esc(s.email) : '')+'</div>';
+    }).join('')+'</div>';
 
     html += '<div class="kpi-grid" style="margin-bottom:18px;">'+
       kpi("Máquinas", maquinas.length, "")+
@@ -2437,13 +2671,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function openMaquinaDialog(clienteId, maquinaId){
     var dlg=document.getElementById('dlg-maquina'), form=document.getElementById('form-maquina');
     var c = findCliente(clienteId); if(!c) return;
-    var m = maquinaId ? (c.maquinas||[]).find(function(x){return x.id===maquinaId;}) : {id:uid('maq'), nome:"", numeroSerie:"", obs:""};
+    var m = maquinaId ? (c.maquinas||[]).find(function(x){return x.id===maquinaId;}) : {id:uid('maq'), nome:"", numeroSerie:"", obs:"", revisarMeses:6};
     if(!m) return;
     document.getElementById('dlg-maquina-title').textContent = maquinaId? "Editar máquina" : "Nova máquina";
     form.clienteId.value = clienteId;
     form.id.value = m.id;
     form.nome.value = m.nome||"";
     form.numeroSerie.value = m.numeroSerie||"";
+    form.revisarMeses.value = (m.revisarMeses==null? 6 : m.revisarMeses);
     form.obs.value = m.obs||"";
     document.getElementById('btn-del-maquina').hidden = !maquinaId;
     document.getElementById('btn-del-maquina').onclick = function(){
@@ -2466,7 +2701,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var c = findCliente(clienteId); if(!c) return;
     var nome = f.nome.value.trim().toUpperCase();
     if(!nome) return;
-    var obj = { id:f.id.value, nome:nome, numeroSerie:f.numeroSerie.value.trim(), obs:f.obs.value.trim() };
+    var obj = { id:f.id.value, nome:nome, numeroSerie:f.numeroSerie.value.trim(), revisarMeses:Math.max(0,parseInt(f.revisarMeses.value,10)||0), obs:f.obs.value.trim() };
     var list = (c.maquinas||[]).slice();
     var idx = list.findIndex(function(x){return x.id===obj.id;});
     if(idx>=0) list[idx]=obj; else list.push(obj);
@@ -2486,6 +2721,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
      sem precisar de uma caixa de busca separada por módulo. ---------------- */
   var CLIENTE_FILTROS = { orc:'', os:'', pag:'', nf:'' };
   var ITEM_FILTROS = { orc:'', os:'', cliente:'' };
+  // Alterna a tela de Clientes entre a lista normal e o relatório de
+  // consumo (top clientes + clientes sumidos) - volta pra "lista" sempre
+  // que o app é reaberto do zero, igual aos outros filtros de tela.
+  var CLIENTES_MODO = 'lista';
   var OS_FILTROS = { pag:'', nf:'' };
   var CLIENTE_FILTRO_FONTES = {
     orc: function(){ var ids={}; DB.orcamentos.forEach(function(o){ if(o.clienteId) ids[o.clienteId]=true; }); return ids; },
@@ -2563,10 +2802,37 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
   /* ---------------- ORÇAMENTOS ---------------- */
   var ORC_FILTRO = 'todas';
+  // Ordenação da lista de orçamentos - por padrão continua igual a sempre
+  // foi (data mais recente primeiro), mas a Raissa pediu pra poder escolher
+  // também por número, já que às vezes a data sozinha deixa a lista com uma
+  // ordem que não bate com o que ela espera (ex: depois de importar/corrigir
+  // orçamentos de outro aparelho). Fica salvo aqui enquanto o app está
+  // aberto, do mesmo jeito que o filtro de status (ORC_FILTRO) já funciona.
+  var ORC_ORDENACAO = 'data_desc';
+  function orcamentoComparator(mode){
+    return function(a,b){
+      if(mode==='numero_asc') return (a.numero||"").localeCompare(b.numero||"", undefined, {numeric:true});
+      if(mode==='numero_desc') return (b.numero||"").localeCompare(a.numero||"", undefined, {numeric:true});
+      if(mode==='data_asc') return (a.data||"").localeCompare(b.data||"");
+      return (b.data||"").localeCompare(a.data||""); // data_desc (padrão)
+    };
+  }
+  function orcOrdenarSelectHtml(){
+    var opts = [
+      ['data_desc','Data (mais recente primeiro)'],
+      ['data_asc','Data (mais antiga primeiro)'],
+      ['numero_desc','Número (maior primeiro)'],
+      ['numero_asc','Número (menor primeiro)']
+    ];
+    return '<div class="toolbar" style="margin-bottom:10px;">'+
+      '<label class="hint" style="margin:0;white-space:nowrap;">Ordenar por:</label>'+
+      '<select data-orc-ordenar>'+opts.map(function(o){ return '<option value="'+o[0]+'"'+(ORC_ORDENACAO===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>'+
+      '</div>';
+  }
   function renderOrcamentos(){
     var chips = filterChips(ORC_FILTRO, ORC_STATUS, 'filter-orc');
     if(!DB.orcamentos.length) return emptyState("📝","Nenhum orçamento ainda","Crie um orçamento com os serviços e a lista de compras interna.");
-    var list = DB.orcamentos.slice().sort(function(a,b){return (b.data||"").localeCompare(a.data||"");});
+    var list = DB.orcamentos.slice().sort(orcamentoComparator(ORC_ORDENACAO));
     if(ORC_FILTRO==='pendentes') list = list.filter(function(o){return o.status==='rascunho'||o.status==='enviado';});
     else if(ORC_FILTRO!=='todas') list = list.filter(function(o){return o.status===ORC_FILTRO;});
     if(CLIENTE_FILTROS.orc) list = list.filter(function(o){ return o.clienteId===CLIENTE_FILTROS.orc; });
@@ -2576,8 +2842,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     var filtroTags = activeFiltrosTagsHtml('orc');
     var clienteResumo = clienteFiltroResumoHtml('orc', list.length, statusFiltroLabel(ORC_FILTRO, ORC_STATUS, {pendentes:'pendente'}, list.length), 'orçamento', 'orçamentos');
+    var ordenarHtml = orcOrdenarSelectHtml();
     if(!list.length) return chips+filtroTags+clienteResumo+emptyState("📝","Nenhum orçamento com esse filtro","Escolha outro filtro para ver os demais orçamentos.");
-    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(o){
+    return chips+filtroTags+clienteResumo+ordenarHtml+'<div class="rec-list">'+list.map(function(o){
       var total = itemsTotal(o.itensServico)-(Number(o.desconto)||0);
       return '<div class="rec-card" data-open-orc="'+o.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(o.clienteNome)+'</div><div class="rec-num">'+esc(o.numero)+' · '+dateBR(o.data)+'</div></div>'+pill(ORC_STATUS[o.status])+'</div>'+
         (o.titulo? '<div class="rec-meta"><span>📌 '+esc(o.titulo)+'</span></div>' : '')+
@@ -2915,6 +3182,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     document.getElementById('dlg-orcamento-title').textContent = id? "Editar orçamento "+o.numero : "Novo orçamento";
     form.id.value=o.id;
     form.numero.value = o.numero||"";
+    // Em orçamento NOVO o número é sempre automático (trava o campo, pra não
+    // ter gente digitando por engano). Só ao EDITAR um orçamento que já
+    // existe é que libera pra corrigir manualmente - único jeito de resolver
+    // um número duplicado, que pode acontecer se dois aparelhos criarem
+    // orçamentos offline (sem sincronizar entre si) no mesmo intervalo.
+    form.numero.readOnly = !id;
+    form.numero.title = id
+      ? 'Gerado automaticamente ao criar. Pode ser corrigido aqui, com cuidado, só em casos de número duplicado (ex: dois aparelhos criaram orçamentos offline ao mesmo tempo).'
+      : 'Gerado automaticamente, em sequência - não pode ser editado.';
     fillClienteSelect(document.getElementById('orc-cliente-select'), o.clienteId);
     PREV_ORC_CLIENTE_VALUE = o.clienteId||"";
     fillMaquinaSelect(document.getElementById('orc-maquina-select'), o.clienteId, o.maquinaId, o.maquina);
@@ -3116,7 +3392,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(maquinaSelectVal === '__new__'){
       var novoNome = document.getElementById('orc-maquina-new').value.trim().toUpperCase();
       if(!novoNome){ customAlert('Informe o nome da nova máquina/equipamento.'); return null; }
-      var novaMaquina = { id: uid('maq'), nome: novoNome, numeroSerie:"", obs:"" };
+      var novaMaquina = { id: uid('maq'), nome: novoNome, numeroSerie:"", revisarMeses:6, obs:"" };
       cliente.maquinas = (cliente.maquinas||[]).concat([novaMaquina]);
       upsert('clientes', cliente);
       maquinaId = novaMaquina.id; maquinaNome = novaMaquina.nome;
@@ -3176,10 +3452,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       ));
     }
     var semValidade = document.getElementById('orc-sem-validade').checked;
-    // número: sempre gerado em sequência (nunca lido do campo do formulário,
-    // que agora é somente leitura) - existing.numero se for edição, senão o próximo da fila.
+    // número: em orçamento NOVO sempre é gerado em sequência (campo travado,
+    // nem lê do formulário). Em EDIÇÃO, agora o campo pode ser corrigido à
+    // mão (ver openOrcamentoDialog) - então lê o valor digitado, mas barra
+    // se ele bater com o número de outro orçamento que não seja este mesmo
+    // (evita trocar um número duplicado por outro).
+    var numeroFinal = existing ? (form.numero.value.trim() || existing.numero) : nextNumero(DB.orcamentos,'ORC',5,192);
+    if(existing && numeroFinal !== existing.numero){
+      var conflito = DB.orcamentos.some(function(x){ return x.id!==existing.id && x.numero===numeroFinal; });
+      if(conflito){
+        customAlert('Já existe outro orçamento com o número "'+numeroFinal+'". Escolha um número diferente.');
+        return null;
+      }
+    }
     return {
-      id:form.id.value, numero: existing? existing.numero : nextNumero(DB.orcamentos,'ORC',5,192),
+      id:form.id.value, numero: numeroFinal,
       clienteId:clienteId, clienteNome:cliente.nome, titulo: form.titulo.value.trim().toUpperCase(), solicitante: solicitanteNome, solicitanteId: solicitanteId, maquina:maquinaNome, maquinaId:maquinaId,
       data:form.data.value||todayISO(), validade: semValidade? null : (parseInt(form.validade.value)||7), semValidade: semValidade,
       itensServico: itensServico,
@@ -3221,7 +3508,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     render();
     toast('Orçamento enviado');
     printOrcamento(obj.id, msg);
-    abrirWhatsappWebFallback(cliente, msg);
+    abrirWhatsappWebFallback(solicitanteTelefone(obj, cliente), msg);
   });
 
   // Nome de quem está logado agora (pra registrar "quem alterou" nos
@@ -3322,6 +3609,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       render();
       toast('OS '+os.numero+' gerada a partir do orçamento'+(nfMsg||''));
       openOSDetail(os.id);
+      // Força o registro do recebimento (forma de pagamento + vencimento) já
+      // na hora de gerar a OS, em vez de depender da pessoa lembrar de clicar
+      // em "+ Recebimento" depois — fica em cima do detalhe da OS, que
+      // continua aberto por baixo.
+      openPagamentoDialog(null, os.id, true);
     }
     if(solicitaNF==='sim'){
       upsert('nf', {id:uid('nf'), osId:os.id, numero:"", dataEmissao:"", valor:os.valorTotal, status:'pendente'});
@@ -3448,20 +3740,28 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     render();
     toast('OS duplicada como '+novo.numero);
     openOSDetail(novo.id);
+    // A OS duplicada não herda os recebimentos da original (eles ficam
+    // vinculados só à OS de origem) - força cadastrar o recebimento desta
+    // também, igual acontece ao gerar uma OS a partir de um orçamento.
+    openPagamentoDialog(null, novo.id, true);
   }
 
   function openOrcamentoDetail(id){
     var o = findOrcamento(id); if(!o) return;
     var dlg=document.getElementById('dlg-orcamento-detail');
     document.getElementById('orc-detail-title').textContent = "Orçamento "+o.numero+(o.titulo? ' — '+o.titulo : '');
-    var total = itemsTotal(o.itensServico)-(Number(o.desconto)||0);
+    var descontoOrc = Number(o.desconto)||0;
+    var subtotalOrc = itemsTotal(o.itensServico);
+    var total = subtotalOrc-descontoOrc;
     var linkedOS = DB.os.find(function(x){return x.orcamentoOrigemId===o.id;});
     var html = '<div class="detail-grid">'+
-      dt("Cliente", esc(o.clienteNome))+ dt("Status", pill(ORC_STATUS[o.status]))+
+      dt("Cliente", clienteLinkHtml(o.clienteId, o.clienteNome))+ dt("Status", pill(ORC_STATUS[o.status]))+
       (o.titulo? dt("Serviço solicitado", esc(o.titulo)) : '')+
       (o.solicitante? dt("Solicitante", esc(o.solicitante)) : '')+
-      dt("Máquina", esc(o.maquina||"—"))+ dt("Data", dateBR(o.data))+
-      dt("Validade", o.validade+" dias")+ dt("Total", money(total))+
+      dt("Máquina", maquinaLinkHtml(o.clienteId, o.maquinaId, o.maquina))+ dt("Data", dateBR(o.data))+
+      dt("Validade", o.validade+" dias")+
+      (descontoOrc>0? dt("Valor (sem desconto)", money(subtotalOrc))+dt("Desconto", "- "+money(descontoOrc)) : '')+
+      dt("Total"+(descontoOrc>0? " (com desconto)":""), money(total))+
       dt("Forma de pagamento", esc(formaPagamentoLabel(o)))+
       '</div>';
     html += '<div class="section-title">Itens do orçamento</div>' + itemsTable(o.itensServico, true);
@@ -3488,6 +3788,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     dlg.showModal();
   }
   function dt(k,v){ return '<div><div class="k">'+esc(k)+'</div><div class="v">'+v+'</div></div>'; }
+  // A Raissa pediu pra poder clicar no nome do cliente (dentro do detalhe do
+  // orçamento/OS) e cair direto no cadastro dele, e clicar no nome da
+  // máquina e cair direto no histórico filtrado daquela máquina - em vez de
+  // ter que sair, ir em Clientes e procurar manualmente. Só vira link quando
+  // dá pra resolver o cliente/máquina de verdade (evita levar pra uma tela
+  // vazia se o cliente foi excluído, ou a máquina não existir mais no
+  // cadastro) - nesses casos fica só o texto normal, igual sempre foi.
+  function clienteLinkHtml(clienteId, nome){
+    var label = esc(nome||"—");
+    if(!clienteId || !findCliente(clienteId)) return label;
+    return '<button type="button" class="detail-link" data-goto-cliente="'+clienteId+'" title="Ver cadastro do cliente">'+label+'</button>';
+  }
+  function acharMaquinaDoCliente(cliente, maquinaId, maquinaNome){
+    var maquinas = (cliente&&cliente.maquinas)||[];
+    var maq = maquinaId ? maquinas.find(function(m){return m.id===maquinaId;}) : null;
+    if(!maq && maquinaNome) maq = maquinas.find(function(m){return m.nome && m.nome.trim().toUpperCase()===maquinaNome.trim().toUpperCase();});
+    return maq||null;
+  }
+  function maquinaLinkHtml(clienteId, maquinaId, maquinaNome){
+    var label = esc(maquinaNome||"—");
+    if(!maquinaNome || !clienteId) return label;
+    var c = findCliente(clienteId);
+    var maq = c ? acharMaquinaDoCliente(c, maquinaId, maquinaNome) : null;
+    if(!maq) return label;
+    return '<button type="button" class="detail-link" data-goto-maquina="'+clienteId+'|'+maq.id+'" title="Ver histórico desta máquina">'+label+'</button>';
+  }
   function formaPagamentoLabel(o){
     if(!o || !o.formaPagamento) return "—";
     if((o.formaPagamento==='Cartão parcelado' || o.formaPagamento==='Boleto parcelado') && o.parcelas) return o.formaPagamento+' em '+o.parcelas+'x';
@@ -3506,10 +3832,34 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
   /* ---------------- ORDENS DE SERVIÇO ---------------- */
   var OS_FILTRO = 'todas';
+  // Mesma ideia da ordenação de orçamentos: por padrão continua igual a
+  // sempre foi (data de abertura mais recente primeiro), com opção de trocar
+  // pra data mais antiga ou por número.
+  var OS_ORDENACAO = 'data_desc';
+  function osComparator(mode){
+    return function(a,b){
+      if(mode==='numero_asc') return (a.numero||"").localeCompare(b.numero||"", undefined, {numeric:true});
+      if(mode==='numero_desc') return (b.numero||"").localeCompare(a.numero||"", undefined, {numeric:true});
+      if(mode==='data_asc') return (a.dataAbertura||"").localeCompare(b.dataAbertura||"");
+      return (b.dataAbertura||"").localeCompare(a.dataAbertura||""); // data_desc (padrão)
+    };
+  }
+  function ordenarSelectHtml(currentValue, attr){
+    var opts = [
+      ['data_desc','Data (mais recente primeiro)'],
+      ['data_asc','Data (mais antiga primeiro)'],
+      ['numero_desc','Número (maior primeiro)'],
+      ['numero_asc','Número (menor primeiro)']
+    ];
+    return '<div class="toolbar" style="margin-bottom:10px;">'+
+      '<label class="hint" style="margin:0;white-space:nowrap;">Ordenar por:</label>'+
+      '<select data-'+attr+'>'+opts.map(function(o){ return '<option value="'+o[0]+'"'+(currentValue===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>'+
+      '</div>';
+  }
   function renderOSList(){
     var chips = filterChips(OS_FILTRO, OS_STATUS, 'filter-os');
     if(!DB.os.length) return emptyState("🔧","Nenhuma OS ainda","Ordens de serviço nascem de orçamentos aprovados, ou você pode registrar uma diretamente pelo painel do cliente.");
-    var list = DB.os.slice().sort(function(a,b){return (b.dataAbertura||"").localeCompare(a.dataAbertura||"");});
+    var list = DB.os.slice().sort(osComparator(OS_ORDENACAO));
     if(OS_FILTRO==='abertas') list = list.filter(function(o){return o.status!=='concluida'&&o.status!=='cancelada';});
     else if(OS_FILTRO!=='todas') list = list.filter(function(o){return o.status===OS_FILTRO;});
     if(CLIENTE_FILTROS.os) list = list.filter(function(o){ return o.clienteId===CLIENTE_FILTROS.os; });
@@ -3519,8 +3869,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     var filtroTags = activeFiltrosTagsHtml('os');
     var clienteResumo = clienteFiltroResumoHtml('os', list.length, statusFiltroLabel(OS_FILTRO, OS_STATUS, {abertas:'em aberto'}, list.length), 'ordem de serviço', 'ordens de serviço');
+    var ordenarHtml = ordenarSelectHtml(OS_ORDENACAO, 'os-ordenar');
     if(!list.length) return chips+filtroTags+clienteResumo+emptyState("🔧","Nenhuma OS com esse filtro","Escolha outro filtro para ver as demais ordens de serviço.");
-    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(o){
+    return chips+filtroTags+clienteResumo+ordenarHtml+'<div class="rec-list">'+list.map(function(o){
       var resolvidos = (o.listaCompras||[]).filter(function(i){return compraStatus(i).key!=='comprar';}).length;
       return '<div class="rec-card" data-open-os="'+o.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(o.clienteNome)+'</div><div class="rec-num">'+esc(o.numero)+' · aberta em '+dateBR(o.dataAbertura)+'</div></div>'+pill(OS_STATUS[o.status])+'</div>'+
         (o.titulo? '<div class="rec-meta"><span>📌 '+esc(o.titulo)+'</span></div>' : '')+
@@ -3534,12 +3885,15 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     document.getElementById('os-detail-title').textContent = "OS "+o.numero+(o.titulo? ' — '+o.titulo : '');
     var pagamentos = DB.pagamentos.filter(function(p){return p.osId===o.id;});
     var nfs = DB.nf.filter(function(n){return n.osId===o.id;});
+    var descontoOS = Number(o.desconto)||0;
+    var subtotalOS = descontoOS>0 ? (o.valorTotal+descontoOS) : 0;
     var html='<div class="detail-grid">'+
-      dt("Cliente", esc(o.clienteNome))+dt("Status", pill(OS_STATUS[o.status]))+
+      dt("Cliente", clienteLinkHtml(o.clienteId, o.clienteNome))+dt("Status", pill(OS_STATUS[o.status]))+
       (o.titulo? dt("Serviço solicitado", esc(o.titulo)) : '')+
       (o.solicitante? dt("Solicitante", esc(o.solicitante)) : '')+
-      dt("Máquina", esc(o.maquina||"—"))+dt("Aberta em", dateBR(o.dataAbertura))+
-      dt("Total", money(o.valorTotal))+dt("Conclusão", o.dataConclusao? dateBR(o.dataConclusao):"—")+
+      dt("Máquina", maquinaLinkHtml(o.clienteId, o.maquinaId, o.maquina))+dt("Aberta em", dateBR(o.dataAbertura))+
+      (descontoOS>0? dt("Valor (sem desconto)", money(subtotalOS))+dt("Desconto", "- "+money(descontoOS)) : '')+
+      dt("Total"+(descontoOS>0? " (com desconto)":""), money(o.valorTotal))+dt("Conclusão", o.dataConclusao? dateBR(o.dataConclusao):"—")+
       dt("Forma de pagamento", esc(formaPagamentoLabel(o)))+
       '</div>';
     html += ultimaAlteracaoHtml(o);
@@ -3785,11 +4139,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else { wrap.hidden=true; wrap.innerHTML=''; }
   }
   document.getElementById('pag-os-select').addEventListener('change', function(){ updatePagamentoOsInfo(this.value); });
-  function openPagamentoDialog(id, presetOsId){
+  function openPagamentoDialog(id, presetOsId, forced){
     var dlg=document.getElementById('dlg-pagamento'), form=document.getElementById('form-pagamento');
     var presetOS = presetOsId? findOS(presetOsId) : null;
     var p = id? DB.pagamentos.find(function(x){return x.id===id;}) : {id:uid('pag'), osId:presetOsId||"", valor: presetOS? presetOS.valorTotal : 0, valorPago:0, forma: presetOS? mapFormaPagamentoParaPagamento(presetOS.formaPagamento) : "Pix", vencimento:todayISO(), status:'em_aberto', obs:""};
-    document.getElementById('dlg-pagamento-title').textContent = id? "Editar recebimento" : "Novo recebimento";
+    dlg.dataset.forced = forced? '1' : '';
+    document.getElementById('pagamento-forced-hint').hidden = !forced;
+    dlg.querySelectorAll('[data-close]').forEach(function(b){ b.hidden = !!forced; });
+    document.getElementById('dlg-pagamento-title').textContent = id? "Editar recebimento" : (forced? "Recebimento da OS "+(presetOS? presetOS.numero : "") : "Novo recebimento");
     document.getElementById('pagamento-ultima-alteracao').innerHTML = ultimaAlteracaoHtml(p);
     form.id.value=p.id;
     fillOSSelect(document.getElementById('pag-os-select'), p.osId);
@@ -3934,17 +4291,64 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
   /* ---------------- NOTAS FISCAIS ---------------- */
   var NF_FILTRO = 'todas';
+  // Mesma ideia da ordenação de orçamentos/OS: padrão continua sendo data de
+  // emissão mais recente primeiro, com opção de trocar pra data mais antiga
+  // ou por número da nota.
+  var NF_ORDENACAO = 'data_desc';
+  // Filtro por mês de emissão, pedido pela Raissa - útil principalmente pra
+  // fechar o relatório mensal que vai pro contador sem precisar contar/separar
+  // manualmente. '' = todos os meses; senão guarda "AAAA-MM" (mesmo formato
+  // do início da data ISO). NF sem data de emissão ainda (lembrete pendente)
+  // não aparece em nenhum mês específico - só em "Todos os meses".
+  var NF_MES_FILTRO = '';
+  function nfComparator(mode){
+    return function(a,b){
+      if(mode==='numero_asc') return (a.numero||"").localeCompare(b.numero||"", undefined, {numeric:true});
+      if(mode==='numero_desc') return (b.numero||"").localeCompare(a.numero||"", undefined, {numeric:true});
+      if(mode==='data_asc') return (a.dataEmissao||"").localeCompare(b.dataEmissao||"");
+      return (b.dataEmissao||"").localeCompare(a.dataEmissao||""); // data_desc (padrão)
+    };
+  }
+  // Lista os meses (AAAA-MM) que têm ao menos uma NF com data de emissão,
+  // do mais recente pro mais antigo - só esses entram no seletor, pra não
+  // oferecer meses vazios.
+  function nfMesesDisponiveis(){
+    var set = {};
+    DB.nf.forEach(function(n){ if(n.dataEmissao) set[n.dataEmissao.slice(0,7)] = true; });
+    return Object.keys(set).sort().reverse();
+  }
+  function mesAnoLabel(ym){
+    var p = (ym||'').split('-'); var m = parseInt(p[1],10)-1;
+    var nome = MESES_PT[m] || '';
+    return (nome? nome.charAt(0).toUpperCase()+nome.slice(1) : ym)+'/'+p[0];
+  }
+  function nfMesSelectHtml(){
+    var meses = nfMesesDisponiveis();
+    if(!meses.length) return '';
+    return '<div class="toolbar" style="margin-bottom:10px;">'+
+      '<label class="hint" style="margin:0;white-space:nowrap;">Mês:</label>'+
+      '<select data-nf-mes-filtro><option value=""'+(NF_MES_FILTRO===''?' selected':'')+'>Todos os meses</option>'+
+        meses.map(function(ym){ return '<option value="'+ym+'"'+(NF_MES_FILTRO===ym?' selected':'')+'>'+mesAnoLabel(ym)+'</option>'; }).join('')+
+      '</select>'+
+    '</div>';
+  }
   function renderNF(){
     var chips = filterChips(NF_FILTRO, NF_STATUS, 'filter-nf');
     if(!DB.nf.length) return emptyState("🧾","Nenhuma NF registrada","Registre aqui o número e status da nota fiscal de cada OS.");
-    var list = DB.nf.slice().sort(function(a,b){return (b.dataEmissao||"").localeCompare(a.dataEmissao||"");});
+    var list = DB.nf.slice().sort(nfComparator(NF_ORDENACAO));
     if(NF_FILTRO!=='todas') list = list.filter(function(n){return n.status===NF_FILTRO;});
     if(CLIENTE_FILTROS.nf) list = list.filter(function(n){ var o=findOS(n.osId); return o && o.clienteId===CLIENTE_FILTROS.nf; });
     if(OS_FILTROS.nf) list = list.filter(function(n){ return n.osId===OS_FILTROS.nf; });
+    if(NF_MES_FILTRO) list = list.filter(function(n){ return (n.dataEmissao||'').slice(0,7)===NF_MES_FILTRO; });
     var filtroTags = activeFiltrosTagsHtml('nf');
     var clienteResumo = clienteFiltroResumoHtml('nf', list.length, statusFiltroLabel(NF_FILTRO, NF_STATUS, {}, list.length), 'nota fiscal', 'notas fiscais');
-    if(!list.length) return chips+filtroTags+clienteResumo+emptyState("🧾","Nenhuma NF com esse filtro","Escolha outro filtro para ver as demais notas.");
-    return chips+filtroTags+clienteResumo+'<div class="rec-list">'+list.map(function(n){
+    var ordenarHtml = ordenarSelectHtml(NF_ORDENACAO, 'nf-ordenar')+nfMesSelectHtml();
+    if(!list.length) return chips+filtroTags+clienteResumo+ordenarHtml+emptyState("🧾","Nenhuma NF com esse filtro","Escolha outro filtro para ver as demais notas.");
+    var relatorioBtns = '<div class="actions-row" style="margin-bottom:14px;">'+
+      '<button type="button" class="btn sm ghost" data-export-nf-relatorio>📄 Gerar PDF do relatório (deste filtro)</button>'+
+      '<button type="button" class="btn sm ghost" data-whatsapp-nf-relatorio>📲 Enviar por WhatsApp</button>'+
+      '</div>';
+    return chips+filtroTags+clienteResumo+ordenarHtml+relatorioBtns+'<div class="rec-list">'+list.map(function(n){
       var os=findOS(n.osId);
       return '<div class="rec-card" data-open-nf="'+n.id+'"><div class="rec-top"><div><div class="rec-title">'+esc(os?os.clienteNome:"—")+'</div><div class="rec-num">NF '+esc(n.numero||"s/n")+' · '+(os?esc(os.numero):"")+'</div></div>'+pill(NF_STATUS[n.status])+'</div>'+
         '<div class="rec-meta"><span>Emissão: '+dateBR(n.dataEmissao)+'</span></div>'+
@@ -4455,7 +4859,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       body += '<div class="panel"><div class="panel-body">'+
         '<div class="detail-grid">'+dt("Nome",esc(c.nome))+dt("Responsável",esc(c.responsavel||"—"))+
         dt("Telefone",esc(c.telefone||"—"))+dt("E-mail",esc(c.email||"—"))+
-        dt("Cidade/UF",esc(c.cidade||"—"))+dt("CNPJ",esc(c.cnpj||"—"))+'</div>'+
+        dt("Cidade/UF",esc(c.cidade||"—"))+dt("CNPJ",esc(c.cnpj||"—"))+dt("Contador",esc(c.contadorTelefone||"—"))+'</div>'+
         '<button class="btn primary" data-edit-config>Editar dados da empresa</button></div></div>';
       body += renderPixPanel();
     } else if(CONFIG_TAB==='orcamentos'){
@@ -4534,7 +4938,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     produtos:{icon:'📦', label:'Produto/Serviço'}
   };
   function lixeiraDescreverItem(tipo, r){
-    if(tipo==='clientes') return {titulo:r.nome||'(sem nome)', subtitulo:r.telefone||''};
+    if(tipo==='clientes') return {titulo:r.nome||'(sem nome)', subtitulo:clientePrimeiroTelefone(r)};
     if(tipo==='orcamentos') return {titulo:(r.numero||'')+' — '+(r.clienteNome||''), subtitulo:money(itemsTotal(r.itensServico)-(Number(r.desconto)||0))};
     if(tipo==='os') return {titulo:(r.numero||'')+' — '+(r.clienteNome||''), subtitulo: r.titulo || r.maquina || money(r.valorTotal)};
     if(tipo==='pagamentos'){
@@ -4580,7 +4984,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     // markupPadrao (que são gravados por outras telas direto no DB.config).
     var obj = Object.assign({}, DB.config, { id:'config', nome:f.nome.value.trim()||'HidrauMiller', responsavel:f.responsavel.value.trim(),
       telefone:f.telefone.value.trim(), email:f.email.value.trim(), cidade:f.cidade.value.trim(),
-      cnpj:f.cnpj.value.trim(), endereco:f.endereco.value.trim() });
+      cnpj:f.cnpj.value.trim(), endereco:f.endereco.value.trim(), contadorTelefone:f.contadorTelefone.value.trim() });
     upsert('config', obj);
     loadDBFromStores();
     document.getElementById('dlg-config').close();
@@ -4676,7 +5080,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         '<span>'+esc(mp.symbol)+'</span><span>'+esc(mp.number)+'</span>'+
       '</span></td>';
   }
-  function printItemsTable(items, total, formaPagamento){
+  function printItemsTable(items, total, formaPagamento, desconto){
+    var descontoNum = Number(desconto)||0;
+    var subtotalItens = total + descontoNum;
     var rows = (items||[]).map(function(i, idx){
       var bg = idx % 2 === 1 ? 'background:#f4f6f0;' : '';
       return '<tr style="'+bg+'">'+
@@ -4700,8 +5106,16 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         '</tr>'+
         rows+
       '</table>'+
+      (descontoNum>0? (
+        '<div style="display:flex;justify-content:space-between;align-items:center;background:#f3f2ec;padding:8px 18px;font-size:12px;color:#454a3d;border-top:1px solid #d9d5c4;">'+
+          '<span>Valor (sem desconto)</span><span style="font-weight:600;">'+money(subtotalItens)+'</span>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;background:#f3f2ec;padding:8px 18px 8px;font-size:12px;color:#454a3d;">'+
+          '<span>Desconto</span><span style="font-weight:600;">- '+money(descontoNum)+'</span>'+
+        '</div>'
+      ) : '')+
       '<div style="display:flex;justify-content:flex-end;align-items:baseline;background:#122e14;color:#fff;padding:13px 18px;">'+
-        '<span style="font-size:11.5px;letter-spacing:.1em;margin-right:16px;">TOTAL</span>'+
+        '<span style="font-size:11.5px;letter-spacing:.1em;margin-right:16px;">TOTAL'+(descontoNum>0?' COM DESCONTO':'')+'</span>'+
         '<span style="font-size:18px;font-weight:700;">'+money(total)+'</span>'+
       '</div>'+
       (formaPagamento? '<div style="display:flex;justify-content:space-between;align-items:center;background:#dde6d3;padding:9px 18px;font-size:12px;color:#191d16;">'+
@@ -4735,7 +5149,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       printHeaderBlock(opts)+
       printInfoPanel(opts, dataLinha)+
       printMachineBadge(opts.maquina, opts.titulo)+
-      printItemsTable(opts.itens, total, opts.formaPagamento)+
+      printItemsTable(opts.itens, total, opts.formaPagamento, opts.desconto)+
       printObsBox(opts.observacoes)+
       printSignatureFooter();
     return html;
@@ -4911,13 +5325,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       y += rowH;
     });
 
+    // valor sem desconto / desconto (só quando houver desconto de verdade -
+    // sem isso, quem recebe o PDF não tinha como saber de onde vinha o total,
+    // já que a tabela de itens soma um valor e o TOTAL saía menor).
+    var descontoPdf = Number(opts.desconto)||0;
+    var total = itemsTotal(opts.itens)-descontoPdf;
+    if(descontoPdf>0){
+      var subtotalPdf = total+descontoPdf;
+      ensureSpace(14);
+      doc.setFillColor(243,242,236); doc.rect(left, y, right-left, 7, 'F');
+      doc.setFont(undefined,'normal'); doc.setFontSize(9); doc.setTextColor(69,74,61);
+      doc.text('Valor (sem desconto)', left+5, y+4.7);
+      doc.setFont(undefined,'bold');
+      doc.text(money(subtotalPdf), right-5, y+4.7, {align:'right'});
+      y += 7;
+      doc.setFillColor(243,242,236); doc.rect(left, y, right-left, 7, 'F');
+      doc.setFont(undefined,'normal'); doc.text('Desconto', left+5, y+4.7);
+      doc.setFont(undefined,'bold');
+      doc.text('- '+money(descontoPdf), right-5, y+4.7, {align:'right'});
+      y += 7;
+    }
     // total bar
     y += 3;
     ensureSpace(opts.formaPagamento ? 23 : 14);
-    var total = itemsTotal(opts.itens)-(Number(opts.desconto)||0);
     doc.setFillColor(18,46,20); doc.rect(left, y, right-left, 10, 'F');
     doc.setTextColor(255,255,255); doc.setFont(undefined,'bold'); doc.setFontSize(9.5);
-    doc.text('TOTAL', left+5, y+6.5);
+    doc.text(descontoPdf>0? 'TOTAL COM DESCONTO' : 'TOTAL', left+5, y+6.5);
     doc.setFontSize(13);
     doc.text(money(total), right-5, y+6.7, {align:'right'});
     y += 10;
@@ -5684,14 +6117,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   // pro WhatsApp escolhido. No link web não tem como anexar arquivo por
   // script, então esse fallback abre o WhatsApp com o texto pronto separado
   // do download do PDF (que já acontece dentro do doPrint).
-  function abrirWhatsappWebFallback(cliente, msg){
+  function abrirWhatsappWebFallback(telefone, msg){
     if(isNativeApp()) return;
-    var link = cliente ? whatsappLink(cliente.telefone, msg) : null;
+    var link = telefone ? whatsappLink(telefone, msg) : null;
     if(link){
       var win = window.open(link, '_blank');
       if(!win) customAlert('Gerei o PDF, mas não consegui abrir o WhatsApp automaticamente (bloqueio de pop-up). Abra manualmente: '+link);
     } else {
-      customAlert('O PDF foi gerado, mas este cliente não tem telefone/WhatsApp cadastrado — não deu para abrir o WhatsApp automaticamente. Adicione o telefone no cadastro do cliente para isso funcionar da próxima vez.');
+      customAlert('O PDF foi gerado, mas não tem um telefone/WhatsApp de responsável cadastrado pra esse cliente — não deu para abrir o WhatsApp automaticamente. Adicione o telefone de um responsável no cadastro do cliente para isso funcionar da próxima vez.');
     }
   }
   function printOrcamento(id, shareText){
@@ -5739,7 +6172,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       empresa: DB.config.nome||'HidrauMiller'
     });
     printOS(id, msg);
-    abrirWhatsappWebFallback(cliente, msg);
+    abrirWhatsappWebFallback(solicitanteTelefone(o, cliente), msg);
   }
   // "Cobrar" - gera um PDF de cobrança com os recebimentos ainda em aberto
   // dessa OS (forma de pagamento acordada, vencimento, pago e saldo de cada
@@ -5837,7 +6270,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       vencimento: dateBR(atrasados[0].vencimento), empresa: c.nome||'HidrauMiller'
     });
     doPrint(html, function(){ return buildCobrancaPdf(o, itens, atrasados, futuros, totalItens, totalCobrado); }, 'Cobranca_'+o.numero, msg);
-    abrirWhatsappWebFallback(cliente, msg);
+    abrirWhatsappWebFallback(solicitanteTelefone(o, cliente), msg);
   }
   // Recibo de um pagamento específico - só pode ser gerado quando esse
   // recebimento já está com status "pago" (é a prova de quitação daquele
@@ -5875,7 +6308,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       data: dateBR(p.dataPagamento), empresa: c.nome||'HidrauMiller'
     });
     doPrint(html, function(){ return buildReciboPdf(p, o, clienteNome); }, 'Recibo_'+(o?o.numero:pagId), msg);
-    if(cliente) abrirWhatsappWebFallback(cliente, msg);
+    if(cliente) abrirWhatsappWebFallback(solicitanteTelefone(o, cliente), msg);
   }
   // Cobrança consolidada: reúne as parcelas em aberto de TODAS as OS do
   // cliente. Só as atrasadas somam no valor cobrado; as que ainda não
@@ -5955,7 +6388,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
     var msg = 'Olá '+(cliente.nome||'')+'! Passando para lembrar sobre o pagamento em aberto referente a '+numOS+' ordens de serviço, no valor total de '+money(totalAtrasado)+'. Segue o extrato em anexo. Qualquer dúvida estou à disposição!';
     doPrint(html, function(){ return buildCobrancaConsolidadaPdf(cliente.nome, numOS, atrasadas, futuras); }, 'Cobranca_consolidada_'+(cliente.nome||''), msg);
-    abrirWhatsappWebFallback(cliente, msg);
+    abrirWhatsappWebFallback(solicitanteTelefone(null, cliente), msg);
   }
   // Exporta (PDF/compartilhar) o histórico de orçamentos + OS de uma máquina
   // específica do cliente - ou de todas, se maquinaId vier vazio. Botão fica
@@ -6021,6 +6454,169 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     var filenameBase = 'Historico_'+(cliente.nome||'')+(maquinaObj? '_'+maquinaObj.nome : '');
     doPrint(html, function(){ return buildHistoricoMaquinaPdf(cliente, maquinaObj, historyOrc, historyOS); }, filenameBase);
   }
+  /* ---------------- relatório de Notas Fiscais (pra mandar pro contador) ----------------
+     Pedido: a Raissa não queria um PDF por NF individual, e sim um relatório
+     de TODAS as notas fiscais que estão dentro do filtro ativo na tela
+     (ex: filtrar por "Pendente" e gerar/enviar o relatório só dessas) -
+     com os dados que o contador precisa pra emitir a nota de verdade: dados
+     do cliente, número da OS e valor de cada uma. */
+  function relatorioNFListaAtual(){
+    var list = DB.nf.slice();
+    if(NF_FILTRO!=='todas') list = list.filter(function(n){return n.status===NF_FILTRO;});
+    if(CLIENTE_FILTROS.nf) list = list.filter(function(n){ var o=findOS(n.osId); return o && o.clienteId===CLIENTE_FILTROS.nf; });
+    if(OS_FILTROS.nf) list = list.filter(function(n){ return n.osId===OS_FILTROS.nf; });
+    if(NF_MES_FILTRO) list = list.filter(function(n){ return (n.dataEmissao||'').slice(0,7)===NF_MES_FILTRO; });
+    return list;
+  }
+  function relatorioNFFiltroDesc(){
+    var partes = [];
+    if(NF_FILTRO!=='todas' && NF_STATUS[NF_FILTRO]) partes.push(NF_STATUS[NF_FILTRO].label);
+    if(CLIENTE_FILTROS.nf){ var cf=findCliente(CLIENTE_FILTROS.nf); if(cf) partes.push('cliente: '+cf.nome); }
+    if(OS_FILTROS.nf){ var of=findOS(OS_FILTROS.nf); if(of) partes.push('OS: '+of.numero); }
+    if(NF_MES_FILTRO) partes.push(mesAnoLabel(NF_MES_FILTRO));
+    return partes.length? partes.join(' · ') : 'Todas as notas fiscais';
+  }
+  function relatorioNFRowsData(list){
+    var rows = list.map(function(n){
+      var os = findOS(n.osId);
+      var orc = (os && os.orcamentoOrigemId) ? findOrcamento(os.orcamentoOrigemId) : null;
+      var cliente = os ? findCliente(os.clienteId) : null;
+      return {
+        dataRef: n.dataEmissao || (os? os.dataAbertura : ''),
+        clienteNome: cliente ? cliente.nome : (os? os.clienteNome : '—'),
+        documento: (cliente && cliente.documento) ? cliente.documento : '—',
+        orcamentoNumero: orc ? orc.numero : '—',
+        osNumero: os ? os.numero : '—',
+        nfNumero: n.numero || 's/ nº',
+        statusLabel: NF_STATUS[n.status] ? NF_STATUS[n.status].label : (n.status||'—'),
+        valor: Number(n.valor)||0
+      };
+    });
+    // Agrupa por cliente - quando o mesmo cliente tem mais de uma OS/NF no
+    // relatório, elas ficam em sequência (uma embaixo da outra) em vez de
+    // intercaladas com as de outros clientes por causa da data. Dentro de
+    // cada cliente, mantém a ordem por data de emissão.
+    rows.sort(function(a,b){
+      var ca = (a.clienteNome||'').toLocaleUpperCase('pt-BR');
+      var cb = (b.clienteNome||'').toLocaleUpperCase('pt-BR');
+      if(ca!==cb) return ca<cb? -1 : 1;
+      return (a.dataRef||'').localeCompare(b.dataRef||'');
+    });
+    return rows;
+  }
+  function buildRelatorioNFHtml(list){
+    var rows = relatorioNFRowsData(list);
+    var total = rows.reduce(function(s,r){return s+r.valor;},0);
+    var c = DB.config;
+    var dataLinha = (c.cidade? esc(c.cidade)+', ' : '') + esc(dateExtenso(todayISO()));
+    var tabela = rows.length
+      ? '<table style="width:100%;border-collapse:collapse;font-size:12.5px;"><tr style="background:#eae7db;">'+
+        '<th style="padding:8px;text-align:left;">Data</th><th style="padding:8px;text-align:left;">Cliente</th><th style="padding:8px;text-align:left;">CPF/CNPJ</th>'+
+        '<th style="padding:8px;text-align:left;">Orçamento</th><th style="padding:8px;text-align:left;">OS</th><th style="padding:8px;text-align:left;">NF</th><th style="padding:8px;text-align:left;">Status</th><th style="padding:8px;text-align:right;">Valor</th></tr>'+
+        rows.map(function(r){
+          return '<tr><td style="padding:8px;border-bottom:1px solid #ddd;">'+dateBR(r.dataRef)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(r.clienteNome)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(r.documento)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(r.orcamentoNumero)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;"><b>'+esc(r.osNumero)+'</b></td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(r.nfNumero)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;">'+esc(r.statusLabel)+'</td>'+
+            '<td style="padding:8px;border-bottom:1px solid #ddd;text-align:right;">'+money(r.valor)+'</td></tr>';
+        }).join('')+'</table>'
+      : '<div style="font-size:12.5px;color:#767a6a;">Nenhuma nota fiscal encontrada com esse filtro.</div>';
+    return printLogoBlock()+
+      '<div style="display:inline-block;background:#204623;color:#fff;font-weight:700;font-size:16px;letter-spacing:.03em;padding:9px 18px;border-radius:6px;margin-bottom:12px;">RELATÓRIO DE NOTAS FISCAIS</div>'+
+      '<div style="font-size:13px;margin-bottom:6px;">'+dataLinha+'</div>'+
+      '<div style="font-size:13px;margin-bottom:12px;"><b>Filtro:</b> '+esc(relatorioNFFiltroDesc())+'</div>'+
+      tabela+
+      (rows.length? '<div style="text-align:right;font-size:13px;font-weight:700;margin-top:10px;color:#204623;">Total: '+money(total)+' · '+rows.length+' nota(s)</div>' : '');
+  }
+  function buildRelatorioNFPdf(list){
+    var rows = relatorioNFRowsData(list);
+    var c = DB.config;
+    var doc = new window.jspdf.jsPDF({unit:'mm', format:'a4', compress:true});
+    var pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+    var left = 15, right = pageW-15, y = 15;
+    doc.setFontSize(10.5);
+    var logoBottom = pdfAddLogo(doc, pageW, y);
+
+    var bannerW = 96, bannerH = 14;
+    doc.setFillColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+    doc.roundedRect(left, y, bannerW, bannerH, 2.5, 2.5, 'F');
+    doc.setFont(undefined,'bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+    doc.text('RELATÓRIO DE NOTAS FISCAIS', left+6, y+9.3);
+    doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(10.5);
+    y = Math.max(logoBottom, y+bannerH+9);
+
+    doc.text((c.cidade? c.cidade+', ' : '') + dateExtenso(todayISO()), left, y); y += 7;
+    pdfLabeledLine(doc, left, y, 'Filtro:', relatorioNFFiltroDesc()); y += 10;
+
+    function ensurePageFor(h){ if(y+h > pageH-25){ doc.addPage(); y = 15; } }
+
+    if(!rows.length){
+      doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      doc.text('Nenhuma nota fiscal encontrada com esse filtro.', left, y);
+      doc.setTextColor(0,0,0);
+    } else {
+      var cols = [
+        {label:'DATA', w:18, align:'left'}, {label:'CLIENTE', w:25, align:'left'}, {label:'CPF/CNPJ', w:30, align:'left'},
+        {label:'ORÇ.', w:27, align:'left'}, {label:'OS', w:23, align:'left'}, {label:'NF', w:15, align:'left'}, {label:'STATUS', w:18, align:'left'}
+      ];
+      var fixedW = cols.reduce(function(s,col){return s+col.w;},0);
+      cols.push({label:'VALOR', w:(right-left-fixedW), align:'right'});
+      var colX = function(idx){ var x=left; for(var i=0;i<idx;i++) x+=cols[i].w; return x; };
+
+      ensurePageFor(9);
+      doc.setFont(undefined,'bold'); doc.setFontSize(8.3); doc.setTextColor(PDF_GRAY_TEXT[0],PDF_GRAY_TEXT[1],PDF_GRAY_TEXT[2]);
+      cols.forEach(function(col,i){
+        var x = colX(i) + (col.align==='right'? col.w-2 : 0);
+        doc.text(col.label, x, y, {align: col.align==='left'?'left':col.align});
+      });
+      doc.setDrawColor(PDF_BORDER_GRAY[0],PDF_BORDER_GRAY[1],PDF_BORDER_GRAY[2]); doc.line(left, y+2, right, y+2);
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal'); doc.setFontSize(9);
+      y += 6;
+
+      var total = 0;
+      rows.forEach(function(r){
+        var clienteLines = doc.splitTextToSize(String(r.clienteNome||'—'), cols[1].w-3);
+        var rowH = Math.max(6.5, clienteLines.length*4.2+2);
+        ensurePageFor(rowH+2);
+        total += r.valor;
+        doc.text(dateBR(r.dataRef), colX(0), y+3);
+        doc.text(clienteLines, colX(1), y+3);
+        doc.text(String(r.documento||'—'), colX(2), y+3);
+        doc.text(String(r.orcamentoNumero||'—'), colX(3), y+3);
+        doc.setFont(undefined,'bold'); doc.text(String(r.osNumero||'—'), colX(4), y+3); doc.setFont(undefined,'normal');
+        doc.text(String(r.nfNumero||'—'), colX(5), y+3);
+        doc.text(String(r.statusLabel||'—'), colX(6), y+3);
+        doc.text(money(r.valor), colX(7)+cols[7].w-2, y+3, {align:'right'});
+        doc.setDrawColor(240,240,234); doc.line(left, y+rowH-1.5, right, y+rowH-1.5);
+        y += rowH;
+      });
+      y += 4;
+      doc.setFont(undefined,'bold'); doc.setFontSize(9.5); doc.setTextColor(PDF_GREEN_DARK[0],PDF_GREEN_DARK[1],PDF_GREEN_DARK[2]);
+      doc.text('Total: '+money(total)+' · '+rows.length+' nota(s)', right, y, {align:'right'});
+      doc.setTextColor(0,0,0); doc.setFont(undefined,'normal');
+    }
+    return doc;
+  }
+  function exportarRelatorioNF(){
+    var list = relatorioNFListaAtual();
+    if(!list.length){ toast('Não há notas fiscais para exportar com esse filtro.'); return; }
+    var html = buildRelatorioNFHtml(list);
+    doPrint(html, function(){ return buildRelatorioNFPdf(list); }, 'Relatorio_NF');
+  }
+  function enviarRelatorioNFWhatsapp(){
+    var list = relatorioNFListaAtual();
+    if(!list.length){ toast('Não há notas fiscais para enviar com esse filtro.'); return; }
+    var telefone = (DB.config.contadorTelefone||'').trim();
+    if(!telefone){ customAlert('Cadastre o telefone/WhatsApp do contador em Configurações > Dados da empresa antes de enviar.'); return; }
+    var total = relatorioNFRowsData(list).reduce(function(s,r){return s+r.valor;},0);
+    var msg = 'Olá! Segue o relatório de notas fiscais ('+relatorioNFFiltroDesc()+') — '+list.length+' nota(s), totalizando '+money(total)+'. Segue em anexo.';
+    var html = buildRelatorioNFHtml(list);
+    doPrint(html, function(){ return buildRelatorioNFPdf(list); }, 'Relatorio_NF', msg);
+    abrirWhatsappWebFallback(telefone, msg);
+  }
   // Ponto de entrada único do botão "Cobrar" (tanto no detalhe da OS quanto
   // na aba Recebimentos): se o cliente tem OUTRAS OS com parcelas atrasadas
   // além desta, pergunta se quer somar tudo numa cobrança só e, se sim, se
@@ -6074,6 +6670,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       else if((t=e.target.closest('[data-open-fornecedor]'))) openFornecedorDialog(t.dataset.openFornecedor);
       else if((t=e.target.closest('[data-open-produto]'))) openProdutoDialog(t.dataset.openProduto);
       else if((t=e.target.closest('[data-filter-despesa]'))){ DESPESA_FILTRO = t.dataset.filterDespesa; render(); }
+      else if((t=e.target.closest('[data-clientes-modo]'))){ CLIENTES_MODO = t.dataset.clientesModo; render(); }
+      else if(e.target.closest('[data-export-nf-relatorio]')){ exportarRelatorioNF(); }
+      else if(e.target.closest('[data-whatsapp-nf-relatorio]')){ enviarRelatorioNFWhatsapp(); }
       else if((t=e.target.closest('[data-filter-orc]'))){ ORC_FILTRO = t.dataset.filterOrc; ITEM_FILTROS.orc = ''; render(); }
       else if((t=e.target.closest('[data-filter-os]'))){ OS_FILTRO = t.dataset.filterOs; ITEM_FILTROS.os = ''; render(); }
       else if((t=e.target.closest('[data-filter-pag]'))){ PAG_FILTRO = t.dataset.filterPag; OS_FILTROS.pag = ''; render(); }
@@ -6105,6 +6704,10 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         var parts = t.dataset.setEstoqueCompraGeral.split('|');
         setEstoqueCompraGeral(parts[0], parseInt(parts[1],10), t.value);
       }
+      else if((t=e.target.closest('[data-orc-ordenar]'))){ ORC_ORDENACAO = t.value; render(); }
+      else if((t=e.target.closest('[data-os-ordenar]'))){ OS_ORDENACAO = t.value; render(); }
+      else if((t=e.target.closest('[data-nf-ordenar]'))){ NF_ORDENACAO = t.value; render(); }
+      else if((t=e.target.closest('[data-nf-mes-filtro]'))){ NF_MES_FILTRO = t.value; render(); }
     };
     root.onsubmit = function(e){
       if(e.target && e.target.id==='form-perfil-nome'){
@@ -6186,9 +6789,32 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     else if(e.target.closest('[data-migrate-cloud]')){
       customConfirm('Enviar todos os dados deste aparelho (clientes, orçamentos, OS, etc.) para a nuvem? Use isso apenas 1 vez - depois os dados ficam sempre sincronizados automaticamente, sem precisar repetir.', {okLabel:'Enviar dados', danger:false}).then(function(ok){ if(ok) migrateLocalDataToCloud(); });
     }
+    else if((t=e.target.closest('[data-goto-cliente]'))){
+      document.getElementById('dlg-orcamento-detail').close();
+      document.getElementById('dlg-os-detail').close();
+      openClienteDetail(t.dataset.gotoCliente);
+    }
+    else if((t=e.target.closest('[data-goto-maquina]'))){
+      var gotoPartes = t.dataset.gotoMaquina.split('|');
+      document.getElementById('dlg-orcamento-detail').close();
+      document.getElementById('dlg-os-detail').close();
+      openClienteDetailNaMaquina(gotoPartes[0], gotoPartes[1]);
+    }
     else if((t=e.target.closest('[data-set-orc-status]')) && CURRENT_ORC_ID){ setOrcamentoStatus(CURRENT_ORC_ID, t.dataset.setOrcStatus); }
     else if((t=e.target.closest('[data-edit-orc]'))){ document.getElementById('dlg-orcamento-detail').close(); openOrcamentoDialog(t.dataset.editOrc); }
-    else if((t=e.target.closest('[data-print-orc]'))){ printOrcamento(t.dataset.printOrc); }
+    else if((t=e.target.closest('[data-print-orc]'))){
+      var printOrcId = t.dataset.printOrc;
+      var orcAntesDoPdf = findOrcamento(printOrcId);
+      printOrcamento(printOrcId);
+      // Gerar o PDF já é, na prática, mandar o orçamento pro cliente - então
+      // se ainda estava em "Rascunho", passa sozinho pra "Enviado" (pedido
+      // da Raissa). Só faz isso saindo de rascunho: reimprimir um orçamento
+      // já aprovado/reprovado não deve regredir o status.
+      if(orcAntesDoPdf && orcAntesDoPdf.status==='rascunho'){
+        setOrcamentoStatus(printOrcId, 'enviado');
+        openOrcamentoDetail(printOrcId);
+      }
+    }
     else if((t=e.target.closest('[data-gerar-os]'))){ document.getElementById('dlg-orcamento-detail').close(); gerarOSFromOrcamento(t.dataset.gerarOs); }
     else if((t=e.target.closest('[data-dup-orc]'))){ var dupOrcId=t.dataset.dupOrc; customConfirm('Duplicar este orçamento? Um novo orçamento (com número próprio) será criado com os mesmos itens, pronto para você ajustar.', {okLabel:'Duplicar', danger:false}).then(function(ok){ if(ok) duplicateOrcamento(dupOrcId); }); }
     else if((t=e.target.closest('[data-set-os-status]')) && CURRENT_OS_ID){ setOSStatus(CURRENT_OS_ID, t.dataset.setOsStatus); }
@@ -6252,6 +6878,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       var c=DB.config, f=document.getElementById('form-config');
       f.nome.value=c.nome; f.responsavel.value=c.responsavel||""; f.telefone.value=c.telefone||"";
       f.email.value=c.email||""; f.cidade.value=c.cidade||""; f.cnpj.value=c.cnpj||""; f.endereco.value=c.endereco||"";
+      f.contadorTelefone.value=c.contadorTelefone||"";
       document.getElementById('dlg-config').showModal();
     }
     else if((t=e.target.closest('[data-edit-maquina]')) && CURRENT_CLIENTE_ID){ openMaquinaDialog(CURRENT_CLIENTE_ID, t.dataset.editMaquina); }
@@ -6342,8 +6969,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     if(!allowed || allowed.indexOf('cliente')>=0){
       var baseClientes = clientePrefix ? clientesParaFiltro(clientePrefix) : DB.clientes;
       baseClientes.forEach(function(c){
-        var hay = [c.nome, c.telefone].filter(Boolean).join(' ').toLowerCase();
-        if(hay.indexOf(q)>=0) out.push({type:'cliente', id:c.id, title:c.nome, sub:c.telefone||'cliente'});
+        var respTexto = (c.solicitantes||[]).map(function(s){ return [s.nome,s.telefone,s.email].filter(Boolean).join(' '); }).join(' ');
+        var hay = [c.nome, respTexto].filter(Boolean).join(' ').toLowerCase();
+        if(hay.indexOf(q)>=0) out.push({type:'cliente', id:c.id, title:c.nome, sub:clientePrimeiroTelefone(c)||'cliente'});
       });
     }
     if(!allowed || allowed.indexOf('orcamento')>=0){
@@ -6640,9 +7268,11 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
         if(user){
           gate.hidden = true;
           if(navFoot) navFoot.textContent = 'Logado como ' + (user.displayName || user.email || 'usuário');
-          initCloudSync();
+          if(isLocalDataEmpty()) runSyncGate();
+          else initCloudSync();
         } else {
           gate.hidden = false;
+          document.getElementById('sync-gate').hidden = true;
           document.getElementById('form-auth').hidden = false;
           document.getElementById('btn-auth-toggle').hidden = false;
           document.getElementById('btn-auth-retry').hidden = true;
@@ -6783,6 +7413,21 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   function attachSnapshotListeners(){
     detachSnapshotListeners();
     CLOUD_SYNC.active = true;
+    // Rastreia se cada coleção já respondeu pelo menos uma vez (o primeiro
+    // retorno do onSnapshot já vem com TUDO que existe na nuvem até agora,
+    // marcado como "added" - não é só mudança futura). Usado pelo sync-gate
+    // (runSyncGate) pra saber quando a puxada inicial terminou de verdade,
+    // em vez de liberar a tela enquanto ainda pode estar incompleta.
+    var pending = {};
+    STORE_NAMES.forEach(function(name){ pending[name] = true; });
+    function marcarRecebido(name){
+      delete pending[name];
+      if(Object.keys(pending).length===0 && typeof CLOUD_SYNC.onFirstFullSync==='function'){
+        var cb = CLOUD_SYNC.onFirstFullSync;
+        CLOUD_SYNC.onFirstFullSync = null;
+        cb();
+      }
+    }
     STORE_NAMES.forEach(function(name){
       var unsub = fbDb.collection(name).onSnapshot(function(snapshot){
         var changed = false;
@@ -6795,8 +7440,12 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
           loadDBFromStores();
           render();
         }
+        marcarRecebido(name);
       }, function(err){
         console.error('erro ouvindo mudanças na nuvem ('+name+'):', err);
+        // mesmo com erro numa coleção, não deixa o sync-gate travado pra
+        // sempre por causa só dela.
+        marcarRecebido(name);
       });
       cloudUnsubscribers.push(unsub);
     });
@@ -6804,9 +7453,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
   // Confere se este login já enviou os dados locais pra nuvem alguma vez
   // (documento _meta/sync). Se sim, só liga a escuta em tempo real; se não,
   // deixa o botão de envio disponível na tela Configurações, aba Backup e nuvem (renderSyncPanel).
-  function initCloudSync(){
+  // onReady (opcional) é usado só pelo sync-gate (runSyncGate): recebe
+  // {error} se algo falhou, ou {} quando já dá pra liberar a tela (ou porque
+  // não havia nada pra puxar, ou porque a primeira puxada completa já
+  // chegou via attachSnapshotListeners).
+  function initCloudSync(onReady){
     try{ fbDb = firebase.firestore(); }
-    catch(e){ console.error('erro iniciando o Firestore:', e); return; }
+    catch(e){ console.error('erro iniciando o Firestore:', e); if(onReady) onReady({error:e}); return; }
     if(!CLOUD_SYNC.persistenceTried){
       CLOUD_SYNC.persistenceTried = true;
       try{
@@ -6817,12 +7470,64 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     }
     fbDb.collection('_meta').doc('sync').get().then(function(doc){
       CLOUD_SYNC.migrated = !!(doc.exists && doc.data() && doc.data().migrated);
-      if(CLOUD_SYNC.migrated) attachSnapshotListeners();
+      if(CLOUD_SYNC.migrated){
+        if(onReady) CLOUD_SYNC.onFirstFullSync = function(){ onReady({}); };
+        attachSnapshotListeners();
+      } else if(onReady){
+        // Ninguém nunca ligou a sincronização pra essa conta ainda - não tem
+        // nada salvo na nuvem pra puxar, então não há o que esperar.
+        onReady({});
+      }
       if(VIEW==='config') render();
     }).catch(function(e){
       console.error('erro verificando status de sincronização:', e);
+      if(onReady) onReady({error:e});
     });
   }
+  /* ---------------- sync-gate (aparelho novo/vazio) ----------------
+     Pedido da Raissa: num aparelho/instalação novo, logo após o login, o
+     app ficava visivelmente "vazio" por um instante até a sincronização com
+     a nuvem completar - o receio dela era alguém começar a cadastrar algo
+     nesse intervalo achando que realmente não tem nada ali, e esse cadastro
+     ficar só local (só é enviado pra nuvem dali pra frente, não é reenviado
+     depois). Fica bloqueando a tela (igual ao login) até confirmar que já
+     puxou os dados existentes - e se não tiver conexão nesse momento, NÃO
+     libera sozinho (combinado com ela): fica esperando/pedindo pra
+     conectar, já que correr esse risco era pior que esperar. Só roda pra
+     aparelho genuinamente vazio (isLocalDataEmpty) - quem já tem dado local
+     (uso normal do dia a dia) nunca vê essa tela, segue exatamente como
+     sempre foi. */
+  function runSyncGate(){
+    var gate = document.getElementById('sync-gate');
+    var errEl = document.getElementById('sync-gate-error');
+    var retryBtn = document.getElementById('btn-sync-gate-retry');
+    var subtitleEl = document.getElementById('sync-gate-subtitle');
+    gate.hidden = false;
+    errEl.hidden = true;
+    retryBtn.hidden = true;
+    subtitleEl.textContent = 'Este aparelho ainda não tem nenhum dado salvo. Conferindo se já existem dados da empresa na nuvem antes de liberar o uso, pra não arriscar um cadastro novo ficar perdido do restante...';
+
+    var finished = false;
+    var timeoutId = setTimeout(function(){
+      onReady({error:new Error('tempo esgotado')});
+    }, 15000);
+
+    function onReady(result){
+      if(finished) return;
+      finished = true;
+      clearTimeout(timeoutId);
+      if(result && result.error){
+        errEl.textContent = 'Não consegui confirmar com a nuvem (sem internet, ou a conexão está instável). Pra não arriscar cadastrar algo achando que o aparelho está vazio, conecte-se à internet e tente de novo antes de continuar.';
+        errEl.hidden = false;
+        retryBtn.hidden = false;
+        return;
+      }
+      gate.hidden = true;
+      render();
+    }
+    initCloudSync(onReady);
+  }
+  document.getElementById('btn-sync-gate-retry').addEventListener('click', runSyncGate);
   /* ---------------- backup manual (exportar/importar arquivo) ----------------
      Antes da Etapa 2, cada aparelho/contexto tinha seus próprios dados
      locais isolados (ex.: o link do navegador que já tem os orçamentos
@@ -6916,7 +7621,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
       html += '<div class="hint">Enviando seus dados para a nuvem, aguarde...</div>';
     } else if(CLOUD_SYNC.migrated){
       html += '<div class="detail-grid">'+dt("Status","🟢 Sincronizado")+dt("Conta",esc(fbAuth.currentUser.email||"—"))+'</div>'+
-        '<p class="hint" style="margin-top:8px;">Seus dados são salvos automaticamente na nuvem e atualizados em tempo real em qualquer aparelho logado com essa conta.</p>';
+        '<p class="hint" style="margin-top:8px;">Seus dados são salvos automaticamente na nuvem e atualizados em tempo real em qualquer aparelho, mesmo com contas diferentes, desde que estejam sincronizados (o login serve pra identificar quem alterou o quê, não pra separar os dados).</p>';
     } else {
       html += '<p class="hint">Envie os orçamentos, OS, clientes e demais dados que já existem neste aparelho para a nuvem. Depois disso, qualquer login autorizado passa a ver os mesmos dados, sempre atualizados.</p>'+
         '<p class="hint" style="color:#a15c00;">Use esse botão apenas 1 vez. Depois de enviar, os dados ficam sempre sincronizados sozinhos - não precisa repetir.</p>'+
@@ -6983,3 +7688,5 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
 
 })();
 </script>
+
+</body></html>
