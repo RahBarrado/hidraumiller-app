@@ -571,6 +571,20 @@
             <button type="button" class="btn ghost sm" id="btn-orc-novo-catalogo">+ novo no catálogo</button>
             <button type="button" class="btn ghost sm" id="btn-orc-add-deslocamento">🚗 + Deslocamento (viagens × km)</button>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:8px 10px;border-top:1px dashed var(--line);">
+            <div class="field" style="margin:0;min-width:0;">
+              <label style="font-size:11px;">Aumentar valor (soma e distribui entre os itens)</label>
+              <div style="display:flex;gap:6px;">
+                <input id="orc-acrescimo-valor" type="number" step="0.01" value="0" style="width:110px;">
+                <select id="orc-acrescimo-tipo" style="width:68px;">
+                  <option value="valor">R$</option>
+                  <option value="percentual">%</option>
+                </select>
+                <button type="button" class="btn ghost sm" id="btn-orc-aplicar-acrescimo">Aplicar aos itens</button>
+              </div>
+            </div>
+          </div>
+          <div class="hint" style="padding:0 10px 8px;">Esse valor é somado ao preço unitário de cada item, proporcionalmente — não aparece como linha separada pro cliente, fica diluído entre os itens.</div>
         </div>
         <datalist id="produtos-datalist-servico"></datalist>
         <datalist id="produtos-datalist-produto"></datalist>
@@ -3329,6 +3343,39 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     updateKmCalcRow(newRow);
     var kmInput = newRow.querySelector('.km-km');
     if(kmInput) kmInput.focus();
+  });
+  // "Aumentar valor": em vez de uma linha separada tipo o desconto (que o
+  // cliente veria no PDF), esse valor é somado direto no preço unitário de
+  // cada item, na mesma proporção - fica diluído entre os itens, sem
+  // aparecer como um acréscimo isolado no documento. Pedido pela Raissa
+  // depois de perceber que uma linha de "Acréscimo" separada não bateria
+  // com os valores unitários já mostrados na tabela de itens do orçamento.
+  document.getElementById('btn-orc-aplicar-acrescimo').addEventListener('click', function(){
+    var rowsEl = document.getElementById('orc-servicos-rows');
+    var itemRows = Array.prototype.slice.call(rowsEl.querySelectorAll('.item-row'));
+    var serv = readItemRows(rowsEl);
+    var subtotal = itemsTotal(serv);
+    if(!itemRows.length || subtotal<=0){
+      customAlert('Adicione itens com valor antes de aumentar o valor.');
+      return;
+    }
+    var tipo = document.getElementById('orc-acrescimo-tipo').value;
+    var valor = parseFloat(document.getElementById('orc-acrescimo-valor').value)||0;
+    if(valor<=0){
+      customAlert('Informe um valor maior que zero para aplicar.');
+      return;
+    }
+    var acrescimoReais = tipo==='percentual' ? (subtotal*valor)/100 : valor;
+    var fator = (subtotal+acrescimoReais)/subtotal;
+    itemRows.forEach(function(row){
+      var valorInput = row.querySelector('.i-valor');
+      if(!valorInput) return;
+      var atual = parseBRL(valorInput.value)||0;
+      valorInput.value = formatBRL(Math.round(atual*fator*100)/100);
+    });
+    document.getElementById('orc-acrescimo-valor').value = 0;
+    updateOrcTotalPreview(document.getElementById('form-orcamento'));
+    toast('Acréscimo de '+money(acrescimoReais)+' distribuído entre os itens');
   });
   var orcComprasRowsEl = document.getElementById('orc-compras-rows');
   orcComprasRowsEl.addEventListener('change', function(e){
